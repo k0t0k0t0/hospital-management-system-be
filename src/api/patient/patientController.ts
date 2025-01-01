@@ -13,7 +13,7 @@ class PatientController {
   };
 
   public getPatient: RequestHandler = async (req: Request, res: Response) => {
-    const id = Number.parseInt(req.params.id, 10);
+    const id = req.params.id;
     const serviceResponse = await patientService.findById(id);
     return handleServiceResponse(serviceResponse, res);
   };
@@ -30,7 +30,7 @@ class PatientController {
     req: Request,
     res: Response
   ) => {
-    const id = Number.parseInt(req.params.id, 10);
+    const id = req.params.id;
     const serviceResponse = await patientService.update(id, req.body);
     return handleServiceResponse(serviceResponse, res);
   };
@@ -39,7 +39,7 @@ class PatientController {
     req: Request,
     res: Response
   ) => {
-    const id = Number.parseInt(req.params.id, 10);
+    const id = req.params.id;
     const serviceResponse = await patientService.delete(id);
     return handleServiceResponse(serviceResponse, res);
   };
@@ -56,7 +56,7 @@ class PatientController {
     req: Request,
     res: Response
   ) => {
-    const id = Number.parseInt(req.params.id, 10);
+    const id = req.params.id;
     const { dateTime } = req.body;
     const serviceResponse = await patientService.rescheduleAppointment(
       id,
@@ -69,7 +69,7 @@ class PatientController {
     req: Request,
     res: Response
   ) => {
-    const id = Number.parseInt(req.params.id, 10);
+    const id = req.params.id;
     const { status, cancelReason } = req.body;
     const serviceResponse = await patientService.updateAppointmentStatus(
       id,
@@ -83,7 +83,7 @@ class PatientController {
     req: Request,
     res: Response
   ) => {
-    const patientId = Number.parseInt(req.params.patientId, 10);
+    const patientId = req.params.patientId;
     const serviceResponse = await patientService.getPatientAppointments(
       patientId
     );
@@ -94,7 +94,7 @@ class PatientController {
     req: Request,
     res: Response
   ) => {
-    const patientId = Number.parseInt(req.params.patientId, 10);
+    const patientId = req.params.patientId;
     const serviceResponse = await patientService.getUpcomingAppointments(
       patientId
     );
@@ -113,7 +113,7 @@ class PatientController {
     req: Request,
     res: Response
   ) => {
-    const patientId = Number.parseInt(req.params.patientId, 10);
+    const patientId = req.params.patientId;
     const serviceResponse = await patientService.getPatientMessages(patientId);
     return handleServiceResponse(serviceResponse, res);
   };
@@ -122,7 +122,7 @@ class PatientController {
     req: Request,
     res: Response
   ) => {
-    const patientId = Number.parseInt(req.params.patientId, 10);
+    const patientId = req.params.patientId;
     const serviceResponse = await patientService.getUnreadMessages(patientId);
     return handleServiceResponse(serviceResponse, res);
   };
@@ -131,7 +131,7 @@ class PatientController {
     req: Request,
     res: Response
   ) => {
-    const messageId = Number.parseInt(req.params.messageId, 10);
+    const messageId = req.params.messageId;
     const serviceResponse = await patientService.markMessageAsRead(messageId);
     return handleServiceResponse(serviceResponse, res);
   };
@@ -154,7 +154,7 @@ class PatientController {
     req: Request,
     res: Response
   ) => {
-    const patientId = Number.parseInt(req.params.id, 10);
+    const patientId = req.params.id;
     const serviceResponse = await patientService.getEmergencyInfo(patientId);
     return handleServiceResponse(serviceResponse, res);
   };
@@ -163,7 +163,7 @@ class PatientController {
     req: Request,
     res: Response
   ) => {
-    const patientId = Number.parseInt(req.params.id, 10);
+    const patientId = req.params.id;
     const serviceResponse = await patientService.updateEmergencyContact(
       patientId,
       req.body

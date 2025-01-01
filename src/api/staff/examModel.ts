@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/common/utils/zodExtensions";
 
 export const ExaminationStatusEnum = z.enum([
   "scheduled",
@@ -15,9 +15,9 @@ export const ExaminationTypeEnum = z.enum([
 ]);
 
 export const ExaminationSchema = z.object({
-  id: z.number(),
-  patientId: z.number(),
-  doctorId: z.number(),
+  id: z.string(),
+  patientId: z.string(),
+  doctorId: z.string(),
   type: ExaminationTypeEnum,
   status: ExaminationStatusEnum,
   scheduledDate: z.date(),

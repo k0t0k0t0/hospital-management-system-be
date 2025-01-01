@@ -1,8 +1,15 @@
-import type { Appointment, EmergencyContact, EmergencyVisit, Message, Patient } from "@/api/patient/patientModel";
+import type {
+  Appointment,
+  EmergencyContact,
+  EmergencyVisit,
+  Message,
+  Patient,
+} from "@/api/patient/patientModel";
 import { patientRepository } from "@/api/patient/patientRepository";
 import { staffRepository } from "@/api/staff/staffRepository";
 import { ServiceResponse } from "@/common/models/serviceResponse";
 import { StatusCodes } from "http-status-codes";
+import mongoose from "mongoose";
 import type { Doctor } from "../staff/staffModel";
 
 export class PatientService {
@@ -14,15 +21,29 @@ export class PatientService {
         patients
       );
     } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError) {
+        return ServiceResponse.failure(
+          "Validation error",
+          error.errors,
+          StatusCodes.BAD_REQUEST
+        );
+      }
+      if (error instanceof mongoose.Error.CastError) {
+        return ServiceResponse.failure(
+          "Invalid ID format",
+          null,
+          StatusCodes.BAD_REQUEST
+        );
+      }
       return ServiceResponse.failure(
-        "Failed to retrieve patients",
+        "Internal server error",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
   }
 
-  async findById(id: number) {
+  async findById(id: string) {
     try {
       const patient = await patientRepository.findByIdAsync(id);
       if (!patient) {
@@ -34,8 +55,22 @@ export class PatientService {
       }
       return ServiceResponse.success("Patient retrieved successfully", patient);
     } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError) {
+        return ServiceResponse.failure(
+          "Validation error",
+          error.errors,
+          StatusCodes.BAD_REQUEST
+        );
+      }
+      if (error instanceof mongoose.Error.CastError) {
+        return ServiceResponse.failure(
+          "Invalid ID format",
+          null,
+          StatusCodes.BAD_REQUEST
+        );
+      }
       return ServiceResponse.failure(
-        "Failed to retrieve patient",
+        "Internal server error",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
@@ -51,15 +86,29 @@ export class PatientService {
         StatusCodes.CREATED
       );
     } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError) {
+        return ServiceResponse.failure(
+          "Validation error",
+          error.errors,
+          StatusCodes.BAD_REQUEST
+        );
+      }
+      if (error instanceof mongoose.Error.CastError) {
+        return ServiceResponse.failure(
+          "Invalid ID format",
+          null,
+          StatusCodes.BAD_REQUEST
+        );
+      }
       return ServiceResponse.failure(
-        "Failed to create patient",
+        "Internal server error",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
   }
 
-  async update(id: number, patientData: Partial<Patient>) {
+  async update(id: string, patientData: Partial<Patient>) {
     try {
       const patient = await patientRepository.updateAsync(id, patientData);
       if (!patient) {
@@ -71,15 +120,29 @@ export class PatientService {
       }
       return ServiceResponse.success("Patient updated successfully", patient);
     } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError) {
+        return ServiceResponse.failure(
+          "Validation error",
+          error.errors,
+          StatusCodes.BAD_REQUEST
+        );
+      }
+      if (error instanceof mongoose.Error.CastError) {
+        return ServiceResponse.failure(
+          "Invalid ID format",
+          null,
+          StatusCodes.BAD_REQUEST
+        );
+      }
       return ServiceResponse.failure(
-        "Failed to update patient",
+        "Internal server error",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
   }
 
-  async delete(id: number) {
+  async delete(id: string) {
     try {
       const success = await patientRepository.deleteAsync(id);
       if (!success) {
@@ -91,8 +154,22 @@ export class PatientService {
       }
       return ServiceResponse.success("Patient deleted successfully", null);
     } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError) {
+        return ServiceResponse.failure(
+          "Validation error",
+          error.errors,
+          StatusCodes.BAD_REQUEST
+        );
+      }
+      if (error instanceof mongoose.Error.CastError) {
+        return ServiceResponse.failure(
+          "Invalid ID format",
+          null,
+          StatusCodes.BAD_REQUEST
+        );
+      }
       return ServiceResponse.failure(
-        "Failed to delete patient",
+        "Internal server error",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
@@ -139,15 +216,29 @@ export class PatientService {
         appointment
       );
     } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError) {
+        return ServiceResponse.failure(
+          "Validation error",
+          error.errors,
+          StatusCodes.BAD_REQUEST
+        );
+      }
+      if (error instanceof mongoose.Error.CastError) {
+        return ServiceResponse.failure(
+          "Invalid ID format",
+          null,
+          StatusCodes.BAD_REQUEST
+        );
+      }
       return ServiceResponse.failure(
-        "Failed to create appointment",
+        "Internal server error",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
   }
 
-  async rescheduleAppointment(id: number, newDateTime: Date) {
+  async rescheduleAppointment(id: string, newDateTime: Date) {
     try {
       const appointment = await patientRepository.findAppointmentByIdAsync(id);
       if (!appointment) {
@@ -184,8 +275,22 @@ export class PatientService {
         updatedAppointment
       );
     } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError) {
+        return ServiceResponse.failure(
+          "Validation error",
+          error.errors,
+          StatusCodes.BAD_REQUEST
+        );
+      }
+      if (error instanceof mongoose.Error.CastError) {
+        return ServiceResponse.failure(
+          "Invalid ID format",
+          null,
+          StatusCodes.BAD_REQUEST
+        );
+      }
       return ServiceResponse.failure(
-        "Failed to reschedule appointment",
+        "Internal server error",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
@@ -193,7 +298,7 @@ export class PatientService {
   }
 
   private async checkDoctorAvailability(
-    doctorId: number,
+    doctorId: string,
     dateTime: Date
   ): Promise<boolean> {
     const doctor = (await staffRepository.findByIdAsync(doctorId)) as Doctor;
@@ -226,7 +331,7 @@ export class PatientService {
   }
 
   async updateAppointmentStatus(
-    id: number,
+    id: string,
     status: Appointment["status"],
     cancelReason?: string
   ) {
@@ -257,15 +362,29 @@ export class PatientService {
         updatedAppointment
       );
     } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError) {
+        return ServiceResponse.failure(
+          "Validation error",
+          error.errors,
+          StatusCodes.BAD_REQUEST
+        );
+      }
+      if (error instanceof mongoose.Error.CastError) {
+        return ServiceResponse.failure(
+          "Invalid ID format",
+          null,
+          StatusCodes.BAD_REQUEST
+        );
+      }
       return ServiceResponse.failure(
-        "Failed to update appointment status",
+        "Internal server error",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
   }
 
-  async getPatientAppointments(patientId: number) {
+  async getPatientAppointments(patientId: string) {
     try {
       const appointments =
         await patientRepository.findAppointmentsByPatientAsync(patientId);
@@ -274,15 +393,29 @@ export class PatientService {
         appointments
       );
     } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError) {
+        return ServiceResponse.failure(
+          "Validation error",
+          error.errors,
+          StatusCodes.BAD_REQUEST
+        );
+      }
+      if (error instanceof mongoose.Error.CastError) {
+        return ServiceResponse.failure(
+          "Invalid ID format",
+          null,
+          StatusCodes.BAD_REQUEST
+        );
+      }
       return ServiceResponse.failure(
-        "Failed to retrieve appointments",
+        "Internal server error",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
   }
 
-  async getUpcomingAppointments(patientId: number) {
+  async getUpcomingAppointments(patientId: string) {
     try {
       const appointments =
         await patientRepository.findUpcomingAppointmentsAsync(patientId);
@@ -291,8 +424,22 @@ export class PatientService {
         appointments
       );
     } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError) {
+        return ServiceResponse.failure(
+          "Validation error",
+          error.errors,
+          StatusCodes.BAD_REQUEST
+        );
+      }
+      if (error instanceof mongoose.Error.CastError) {
+        return ServiceResponse.failure(
+          "Invalid ID format",
+          null,
+          StatusCodes.BAD_REQUEST
+        );
+      }
       return ServiceResponse.failure(
-        "Failed to retrieve upcoming appointments",
+        "Internal server error",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
@@ -313,15 +460,29 @@ export class PatientService {
         StatusCodes.CREATED
       );
     } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError) {
+        return ServiceResponse.failure(
+          "Validation error",
+          error.errors,
+          StatusCodes.BAD_REQUEST
+        );
+      }
+      if (error instanceof mongoose.Error.CastError) {
+        return ServiceResponse.failure(
+          "Invalid ID format",
+          null,
+          StatusCodes.BAD_REQUEST
+        );
+      }
       return ServiceResponse.failure(
-        "Failed to send message",
+        "Internal server error",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
   }
 
-  async getPatientMessages(patientId: number) {
+  async getPatientMessages(patientId: string) {
     try {
       const messages = await patientRepository.findMessagesByPatientAsync(
         patientId
@@ -331,15 +492,29 @@ export class PatientService {
         messages
       );
     } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError) {
+        return ServiceResponse.failure(
+          "Validation error",
+          error.errors,
+          StatusCodes.BAD_REQUEST
+        );
+      }
+      if (error instanceof mongoose.Error.CastError) {
+        return ServiceResponse.failure(
+          "Invalid ID format",
+          null,
+          StatusCodes.BAD_REQUEST
+        );
+      }
       return ServiceResponse.failure(
-        "Failed to retrieve messages",
+        "Internal server error",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
   }
 
-  async getUnreadMessages(patientId: number) {
+  async getUnreadMessages(patientId: string) {
     try {
       const messages = await patientRepository.findUnreadMessagesAsync(
         patientId
@@ -349,15 +524,29 @@ export class PatientService {
         messages
       );
     } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError) {
+        return ServiceResponse.failure(
+          "Validation error",
+          error.errors,
+          StatusCodes.BAD_REQUEST
+        );
+      }
+      if (error instanceof mongoose.Error.CastError) {
+        return ServiceResponse.failure(
+          "Invalid ID format",
+          null,
+          StatusCodes.BAD_REQUEST
+        );
+      }
       return ServiceResponse.failure(
-        "Failed to retrieve unread messages",
+        "Internal server error",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
   }
 
-  async markMessageAsRead(messageId: number) {
+  async markMessageAsRead(messageId: string) {
     try {
       const message = await patientRepository.markMessageAsReadAsync(messageId);
       if (!message) {
@@ -372,8 +561,22 @@ export class PatientService {
         message
       );
     } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError) {
+        return ServiceResponse.failure(
+          "Validation error",
+          error.errors,
+          StatusCodes.BAD_REQUEST
+        );
+      }
+      if (error instanceof mongoose.Error.CastError) {
+        return ServiceResponse.failure(
+          "Invalid ID format",
+          null,
+          StatusCodes.BAD_REQUEST
+        );
+      }
       return ServiceResponse.failure(
-        "Failed to mark message as read",
+        "Internal server error",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
@@ -395,15 +598,30 @@ export class PatientService {
         patients
       );
     } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError) {
+        return ServiceResponse.failure(
+          "Validation error",
+          error.errors,
+          StatusCodes.BAD_REQUEST
+        );
+      }
+      if (error instanceof mongoose.Error.CastError) {
+        console.log(error);
+        return ServiceResponse.failure(
+          "Invalid ID format",
+          null,
+          StatusCodes.BAD_REQUEST
+        );
+      }
       return ServiceResponse.failure(
-        "Failed to search patients",
+        "Internal server error",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
     }
   }
 
-  async getEmergencyInfo(patientId: number) {
+  async getEmergencyInfo(patientId: string) {
     try {
       const patient = await patientRepository.findByIdAsync(patientId);
       if (!patient) {
@@ -417,7 +635,6 @@ export class PatientService {
       // Compile critical emergency information
       const emergencyInfo = {
         patientInfo: {
-          id: patient.id,
           firstName: patient.firstName,
           lastName: patient.lastName,
           dateOfBirth: patient.dateOfBirth,
@@ -441,8 +658,22 @@ export class PatientService {
         emergencyInfo
       );
     } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError) {
+        return ServiceResponse.failure(
+          "Validation error",
+          error.errors,
+          StatusCodes.BAD_REQUEST
+        );
+      }
+      if (error instanceof mongoose.Error.CastError) {
+        return ServiceResponse.failure(
+          "Invalid ID format",
+          null,
+          StatusCodes.BAD_REQUEST
+        );
+      }
       return ServiceResponse.failure(
-        "Failed to retrieve emergency information",
+        "Internal server error",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
@@ -450,7 +681,7 @@ export class PatientService {
   }
 
   async updateEmergencyContact(
-    patientId: number,
+    patientId: string,
     contactInfo: EmergencyContact
   ) {
     try {
@@ -473,8 +704,22 @@ export class PatientService {
         updatedPatient
       );
     } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError) {
+        return ServiceResponse.failure(
+          "Validation error",
+          error.errors,
+          StatusCodes.BAD_REQUEST
+        );
+      }
+      if (error instanceof mongoose.Error.CastError) {
+        return ServiceResponse.failure(
+          "Invalid ID format",
+          null,
+          StatusCodes.BAD_REQUEST
+        );
+      }
       return ServiceResponse.failure(
-        "Failed to update emergency contact",
+        "Internal server error",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR
       );
@@ -499,8 +744,22 @@ export class PatientService {
 
       return ServiceResponse.success("Emergency visit recorded", visit);
     } catch (error) {
+      if (error instanceof mongoose.Error.ValidationError) {
+        return ServiceResponse.failure(
+          "Validation error",
+          error.errors,
+          StatusCodes.BAD_REQUEST
+        );
+      }
+      if (error instanceof mongoose.Error.CastError) {
+        return ServiceResponse.failure(
+          "Invalid ID format",
+          null,
+          StatusCodes.BAD_REQUEST
+        );
+      }
       return ServiceResponse.failure(
-        "Failed to record emergency visit",
+        "Internal server error",
         null,
         StatusCodes.INTERNAL_SERVER_ERROR
       );

@@ -1,6 +1,6 @@
+import { z } from "@/common/utils/zodExtensions";
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import express, { type Router } from "express";
-import { z } from "zod";
 
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
 import {
@@ -490,7 +490,7 @@ patientRegistry.registerPath({
 
 patientRegistry.registerPath({
   method: "post",
-  path: "/emergency-visits",
+  path: "/patients/emergency-visits",
   tags: ["Emergency"],
   request: {
     body: {

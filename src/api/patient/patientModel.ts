@@ -1,15 +1,19 @@
-import { extendZodWithOpenApi } from "@asteasolutions/zod-to-openapi";
-import { z } from "zod";
-
-extendZodWithOpenApi(z);
+import { z } from "@/common/utils/zodExtensions";
+import { model } from "mongoose";
+import { commonValidations } from "../../common/utils/commonValidation";
+import {
+  appointmentSchema,
+  emergencyVisitSchema,
+  messageSchema,
+  patientSchema,
+} from "./patientSchema";
 
 // Base schemas
 export const EmergencyContactSchema = z.object({
-  name: z.string(),
+  name: commonValidations.name,
   relationship: z.string(),
-  primaryPhone: z.string(),
-  secondaryPhone: z.string().optional(),
-  address: z.string(),
+  primaryPhone: commonValidations.phone,
+  secondaryPhone: commonValidations.phone.optional(),
 });
 
 export const VitalSignsSchema = z.object({
@@ -23,7 +27,7 @@ export const InsuranceInfoSchema = z.object({
   provider: z.string(),
   policyNumber: z.string(),
   groupNumber: z.string().optional(),
-  expirationDate: z.date().optional(),
+  expirationDate: commonValidations.optionalDate,
 });
 
 // Enums
@@ -44,77 +48,80 @@ export const AppointmentTypeEnum = z.enum([
   "lab_work",
 ]);
 
-export const MessageStatusEnum = z.enum(["sent", "delivered", "read", "archived"]);
+export const MessageStatusEnum = z.enum([
+  "sent",
+  "delivered",
+  "read",
+  "archived",
+]);
 
-export const EmergencySeverityEnum = z.enum(["CRITICAL", "SEVERE", "MODERATE", "MILD"]);
+export const EmergencySeverityEnum = z.enum([
+  "CRITICAL",
+  "SEVERE",
+  "MODERATE",
+  "MILD",
+]);
 
 // Complex schemas
 export const PatientSchema = z.object({
-  id: z.number(),
-  firstName: z.string().min(2),
-  lastName: z.string().min(2),
-  dateOfBirth: z.string(),
+  firstName: commonValidations.name,
+  lastName: commonValidations.name,
+  dateOfBirth: commonValidations.date,
   gender: z.enum(["male", "female", "other"]),
-  contactNumber: z.string(),
-  email: z.string().email(),
+  contactNumber: commonValidations.phone,
+  email: commonValidations.email,
   address: z.string(),
-  medicalHistory: z.array(z.string()),
+  medicalHistory: commonValidations.nonEmptyArray,
   preferredLanguage: z.string().default("english"),
   emergencyContact: EmergencyContactSchema,
   communicationPreferences: z.object({
-    emailNotifications: z.boolean(),
-    smsNotifications: z.boolean(),
-    preferredContactTime: z.string().optional(),
+    emailNotifications: commonValidations.boolean,
+    smsNotifications: commonValidations.boolean,
+    preferredContactTime: z.string().nullable().optional(),
   }),
-  bloodType: z.string().optional(),
-  allergies: z.array(z.string()).optional(),
-  chronicConditions: z.array(z.string()).optional(),
-  currentMedications: z.array(z.string()).optional(),
-  recentProcedures: z.array(z.string()).optional(),
-  insuranceInfo: InsuranceInfoSchema.optional(),
-  lastEmergencyVisit: z.date().optional(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  bloodType: z.string().nullable().optional(),
+  allergies: z.array(z.string()).nullable().optional(),
+  chronicConditions: z.array(z.string()).nullable().optional(),
+  currentMedications: z.array(z.string()).nullable().optional(),
+  recentProcedures: z.array(z.string()).nullable().optional(),
+  insuranceInfo: InsuranceInfoSchema.nullable().optional(),
+  lastEmergencyVisit: commonValidations.optionalDate,
+  ...commonValidations.timestamps,
 });
 
 export const AppointmentSchema = z.object({
-  id: z.number(),
-  patientId: z.number(),
-  doctorId: z.number(),
+  patientId: z.string().regex(/^[0-9a-fA-F]{24}$/),
+  doctorId: z.string().regex(/^[0-9a-fA-F]{24}$/),
   type: AppointmentTypeEnum,
   status: AppointmentStatusEnum,
-  dateTime: z.date(),
-  duration: z.number(),
+  dateTime: commonValidations.date,
+  duration: commonValidations.positiveNumber,
   reason: z.string(),
   notes: z.string().optional(),
-  cancelledAt: z.date().optional(),
+  cancelledAt: commonValidations.optionalDate,
   cancelReason: z.string().optional(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  ...commonValidations.timestamps,
 });
 
 export const MessageSchema = z.object({
-  id: z.number(),
-  patientId: z.number(),
-  providerId: z.number(),
+  patientId: z.string().regex(/^[0-9a-fA-F]{24}$/),
+  providerId: z.string().regex(/^[0-9a-fA-F]{24}$/),
   subject: z.string(),
   content: z.string(),
   status: MessageStatusEnum,
   attachments: z.array(z.string()).optional(),
-  readAt: z.date().optional(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  readAt: commonValidations.optionalDate,
+  ...commonValidations.timestamps,
 });
 
 export const EmergencyVisitSchema = z.object({
-  id: z.number(),
-  patientId: z.number(),
+  patientId: z.string().regex(/^[0-9a-fA-F]{24}$/),
   severity: EmergencySeverityEnum,
   description: z.string(),
   location: z.string(),
   symptoms: z.array(z.string()),
   vitalSigns: VitalSignsSchema,
-  attendingStaffId: z.number(),
+  attendingStaffId: z.string().regex(/^[0-9a-fA-F]{24}$/),
   outcome: z.string().optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -122,10 +129,9 @@ export const EmergencyVisitSchema = z.object({
 
 export const PatientEmergencySchema = z.object({
   patientInfo: z.object({
-    id: z.number(),
-    firstName: z.string(),
-    lastName: z.string(),
-    dateOfBirth: z.date(),
+    firstName: commonValidations.name,
+    lastName: commonValidations.name,
+    dateOfBirth: commonValidations.date,
     bloodType: z.string().optional(),
     allergies: z.array(z.string()).optional(),
   }),
@@ -136,22 +142,22 @@ export const PatientEmergencySchema = z.object({
     recentProcedures: z.array(z.string()).optional(),
   }),
   insuranceInfo: InsuranceInfoSchema.optional(),
-  lastEmergencyVisit: z.object({
-    date: z.date(),
-    reason: z.string(),
-    outcome: z.string(),
-  }).optional(),
+  lastEmergencyVisit: z
+    .object({
+      date: commonValidations.date,
+      reason: z.string(),
+      outcome: z.string(),
+    })
+    .optional(),
 });
 
-// Create schemas (omitting auto-generated fields)
+// Create schemas (updated to remove id and use MongoDB's _id)
 export const CreatePatientSchema = PatientSchema.omit({
-  id: true,
   createdAt: true,
   updatedAt: true,
 });
 
 export const CreateAppointmentSchema = AppointmentSchema.omit({
-  id: true,
   status: true,
   createdAt: true,
   updatedAt: true,
@@ -160,7 +166,6 @@ export const CreateAppointmentSchema = AppointmentSchema.omit({
 });
 
 export const CreateMessageSchema = MessageSchema.omit({
-  id: true,
   status: true,
   createdAt: true,
   updatedAt: true,
@@ -168,15 +173,24 @@ export const CreateMessageSchema = MessageSchema.omit({
 });
 
 export const CreateEmergencyVisitSchema = EmergencyVisitSchema.omit({
-  id: true,
   createdAt: true,
   updatedAt: true,
 });
 
-// Types
-export type Patient = z.infer<typeof PatientSchema>;
-export type Appointment = z.infer<typeof AppointmentSchema>;
-export type Message = z.infer<typeof MessageSchema>;
-export type EmergencyVisit = z.infer<typeof EmergencyVisitSchema>;
+// Types (MongoDB will add _id automatically)
+export type Patient = z.infer<typeof PatientSchema> & { _id: string };
+export type Appointment = z.infer<typeof AppointmentSchema> & { _id: string };
+export type Message = z.infer<typeof MessageSchema> & { _id: string };
+export type EmergencyVisit = z.infer<typeof EmergencyVisitSchema> & {
+  _id: string;
+};
 export type EmergencyContact = z.infer<typeof EmergencyContactSchema>;
 export type VitalSigns = z.infer<typeof VitalSignsSchema>;
+
+export const PatientModel = model("Patient", patientSchema);
+export const AppointmentModel = model("Appointment", appointmentSchema);
+export const MessageModel = model("Message", messageSchema);
+export const EmergencyVisitModel = model(
+  "EmergencyVisit",
+  emergencyVisitSchema
+);

@@ -23,7 +23,7 @@ class StaffController {
     req: Request,
     res: Response
   ) => {
-    const id = Number.parseInt(req.params.id, 10);
+    const id = req.params.id;
     const serviceResponse = await staffService.findById(id);
     return handleServiceResponse(serviceResponse, res);
   };
@@ -40,7 +40,7 @@ class StaffController {
     req: Request,
     res: Response
   ) => {
-    const id = Number.parseInt(req.params.id, 10);
+    const id = req.params.id;
     const serviceResponse = await staffService.update(id, req.body);
     return handleServiceResponse(serviceResponse, res);
   };
@@ -49,7 +49,7 @@ class StaffController {
     req: Request,
     res: Response
   ) => {
-    const id = Number.parseInt(req.params.id, 10);
+    const id = req.params.id;
     const serviceResponse = await staffService.delete(id);
     return handleServiceResponse(serviceResponse, res);
   };
@@ -58,7 +58,7 @@ class StaffController {
     req: Request,
     res: Response
   ) => {
-    const id = Number.parseInt(req.params.id, 10);
+    const id = req.params.id;
     const serviceResponse = await staffService.getDoctorAvailability(id);
     return handleServiceResponse(serviceResponse, res);
   };
@@ -67,7 +67,7 @@ class StaffController {
     req: Request,
     res: Response
   ) => {
-    const id = Number.parseInt(req.params.id, 10);
+    const id = req.params.id;
     const serviceResponse = await staffService.updateDoctorAvailability(
       id,
       req.body.availability
@@ -79,7 +79,7 @@ class StaffController {
     req: Request,
     res: Response
   ) => {
-    const id = Number.parseInt(req.params.id, 10);
+    const id = req.params.id;
     const serviceResponse = await staffService.updateNurseShift(
       id,
       req.body.shift
@@ -110,7 +110,7 @@ class StaffController {
     req: Request,
     res: Response
   ) => {
-    const id = Number.parseInt(req.params.id, 10);
+    const id = req.params.id;
     const { accessLevel } = req.body;
     const serviceResponse = await staffService.updateAdminAccess(
       id,
@@ -123,7 +123,7 @@ class StaffController {
     req: Request,
     res: Response
   ) => {
-    const id = Number.parseInt(req.params.id, 10);
+    const id = req.params.id;
     const { departments } = req.body;
     const serviceResponse = await staffService.updateManagedDepartments(
       id,
@@ -136,7 +136,7 @@ class StaffController {
     req: Request,
     res: Response
   ) => {
-    const id = Number.parseInt(req.params.id, 10);
+    const id = req.params.id;
     const { responsibilities } = req.body;
     const serviceResponse = await staffService.updateResponsibilities(
       id,
@@ -174,7 +174,7 @@ class StaffController {
     req: Request,
     res: Response
   ) => {
-    const caseId = Number.parseInt(req.params.id, 10);
+    const caseId = req.params.id;
     const { status } = req.body;
     const serviceResponse = await staffService.updateEmergencyCaseStatus(
       caseId,
@@ -187,7 +187,7 @@ class StaffController {
     req: Request,
     res: Response
   ) => {
-    const caseId = Number.parseInt(req.params.id, 10);
+    const caseId = req.params.id;
     const { teamMemberIds } = req.body;
     const serviceResponse = await staffService.reassignEmergencyTeam(
       caseId,
@@ -208,7 +208,7 @@ class StaffController {
     req: Request,
     res: Response
   ) => {
-    const memberId = Number.parseInt(req.params.id, 10);
+    const memberId = req.params.id;
     const { activeShift } = req.body;
     const serviceResponse = await staffService.updateEmergencyTeamMemberStatus(
       memberId,
@@ -249,7 +249,7 @@ class StaffController {
     req: Request,
     res: Response
   ) => {
-    const id = Number.parseInt(req.params.id, 10);
+    const id = req.params.id;
     const { status, results } = req.body;
     const serviceResponse = await staffService.updateLabTestStatus(
       id,
@@ -263,7 +263,7 @@ class StaffController {
     req: Request,
     res: Response
   ) => {
-    const testId = Number.parseInt(req.params.id, 10);
+    const testId = req.params.id;
     const { technicianId } = req.body;
     const serviceResponse = await staffService.reassignLabTechnician(
       testId,
@@ -276,7 +276,7 @@ class StaffController {
     req: Request,
     res: Response
   ) => {
-    const patientId = Number.parseInt(req.params.patientId, 10);
+    const patientId = req.params.patientId;
     const serviceResponse = await staffService.getPatientLabTests(patientId);
     return handleServiceResponse(serviceResponse, res);
   };
@@ -293,7 +293,7 @@ class StaffController {
     req: Request,
     res: Response
   ) => {
-    const id = Number.parseInt(req.params.id, 10);
+    const id = req.params.id;
     const { activeShift } = req.body;
     const serviceResponse = await staffService.updateLabTechnicianStatus(
       id,
@@ -306,7 +306,7 @@ class StaffController {
     req: Request,
     res: Response
   ) => {
-    const doctorId = Number.parseInt(req.params.id, 10);
+    const doctorId = req.params.id;
     const { startDate, endDate } = req.query as {
       startDate: string;
       endDate: string;
@@ -357,7 +357,7 @@ class StaffController {
     req: Request,
     res: Response
   ) => {
-    const id = Number.parseInt(req.params.id, 10);
+    const id = req.params.id;
     const { status, results, cancelReason } = req.body;
     const serviceResponse = await staffService.updateExaminationStatus(
       id,
@@ -372,7 +372,7 @@ class StaffController {
     req: Request,
     res: Response
   ) => {
-    const doctorId = Number.parseInt(req.params.id, 10);
+    const doctorId = req.params.id;
     const { startDate, endDate } = req.query as {
       startDate: string;
       endDate: string;

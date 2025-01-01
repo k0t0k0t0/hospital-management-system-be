@@ -1,320 +1,384 @@
+import type { Model } from "mongoose";
 import type {
-  AdminStaff,
   Doctor,
-  EmergencyCase,
   EmergencyTeamMember,
   LabTechnician,
   LabTest,
   MedicalStaff,
   Nurse,
-} from "@/api/staff/staffModel";
-
-export const medicalStaff: MedicalStaff[] = [
-  {
-    id: 1,
-    firstName: "Jane",
-    lastName: "Smith",
-    email: "jane.smith@hospital.com",
-    contactNumber: "+1234567890",
-    dateOfBirth: "1980-05-15",
-    gender: "female",
-    address: "456 Medical Ave",
-    employeeId: "DOC001",
-    department: "Cardiology",
-    role: "doctor",
-    specialization: "Cardiologist",
-    licenseNumber: "MD12345",
-    availability: [
-      {
-        day: "monday",
-        startTime: "09:00",
-        endTime: "17:00",
-      },
-      {
-        day: "wednesday",
-        startTime: "09:00",
-        endTime: "17:00",
-      },
-    ],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: 2,
-    firstName: "Mary",
-    lastName: "Johnson",
-    email: "mary.johnson@hospital.com",
-    contactNumber: "+1234567891",
-    dateOfBirth: "1985-08-20",
-    gender: "female",
-    address: "789 Nursing Blvd",
-    employeeId: "NUR001",
-    department: "Emergency",
-    role: "nurse",
-    shift: "morning",
-    certificationNumber: "RN98765",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: 3,
-    firstName: "Robert",
-    lastName: "Brown",
-    email: "robert.brown@hospital.com",
-    contactNumber: "+1234567892",
-    dateOfBirth: "1975-03-10",
-    gender: "male",
-    address: "321 Admin Street",
-    employeeId: "ADM001",
-    department: "Administration",
-    role: "admin",
-    position: "hospital_manager",
-    accessLevel: "full",
-    responsibilities: [
-      "Overall hospital management",
-      "Resource allocation",
-      "Policy implementation",
-    ],
-    managedDepartments: ["Emergency", "Surgery", "Cardiology"],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-];
-
-export const emergencyCases: EmergencyCase[] = [];
-
-export const labTests: LabTest[] = [];
+} from "./staffModel";
+import { Models } from "./staffSchema";
 
 export class StaffRepository {
+  private ModelMap: Record<MedicalStaff["role"], Model<any>> = {
+    doctor: Models.Doctor,
+    nurse: Models.Nurse,
+    admin: Models.AdminStaff,
+    emergency: Models.EmergencyTeamMember,
+    lab_technician: Models.LabTechnician,
+  };
+
   async findAllAsync(): Promise<MedicalStaff[]> {
-    return medicalStaff;
-  }
-
-  async findByIdAsync(id: number): Promise<MedicalStaff | null> {
-    return medicalStaff.find((staff) => staff.id === id) || null;
-  }
-
-  async findDoctorsAsync(): Promise<Doctor[]> {
-    return medicalStaff.filter(
-      (staff): staff is Doctor => staff.role === "doctor"
+    const [doctors, nurses, admins, emergency, labTechs] = await Promise.all([
+      Models.Doctor.find().lean(),
+      Models.Nurse.find().lean(),
+      Models.AdminStaff.find().lean(),
+      Models.EmergencyTeamMember.find().lean(),
+      Models.LabTechnician.find().lean(),
+    ]);
+    return [...doctors, ...nurses, ...admins, ...emergency, ...labTechs].map(
+      this.sanitizeStaffData
     );
+  }
+
+  async findByIdAsync(id: string): Promise<MedicalStaff | null> {
+    try {
+      const staff = await Promise.any([
+        Models.Doctor.findById(id).lean(),
+        Models.Nurse.findById(id).lean(),
+        Models.AdminStaff.findById(id).lean(),
+        Models.EmergencyTeamMember.findById(id).lean(),
+        Models.LabTechnician.findById(id).lean(),
+      ]);
+      return staff ? this.sanitizeStaffData(staff) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async createAsync(
+    staff: Omit<MedicalStaff, "createdAt" | "updatedAt">
+  ): Promise<MedicalStaff> {
+    const Model = this.ModelMap[staff.role];
+    if (!Model) throw new Error("Invalid staff role");
+
+    const newStaff = new Model(staff);
+    await newStaff.save();
+    return this.sanitizeStaffData(newStaff.toObject());
+  }
+
+  async updateAsync(
+    id: string,
+    staffData: Partial<MedicalStaff>
+  ): Promise<MedicalStaff | null> {
+    const currentStaff = await this.findByIdAsync(id);
+    if (!currentStaff) return null;
+
+    const updated = await this.ModelMap[currentStaff.role]
+      .findByIdAndUpdate(id, { $set: staffData }, { new: true })
+      .lean();
+
+    return updated ? this.sanitizeStaffData(updated) : null;
+  }
+
+  async deleteAsync(id: string): Promise<boolean> {
+    const currentStaff = await this.findByIdAsync(id);
+    if (!currentStaff) return false;
+
+    const result = await this.ModelMap[currentStaff.role].findByIdAndDelete(id);
+    return result !== null;
+  }
+
+  // Emergency team methods
+  async findEmergencyTeamAsync(): Promise<EmergencyTeamMember[]> {
+    const team = await Models.EmergencyTeamMember.find().lean();
+    return team.map(this.sanitizeEmergencyTeamData);
+  }
+
+  async findAvailableEmergencyTeamAsync(): Promise<EmergencyTeamMember[]> {
+    const team = await Models.EmergencyTeamMember.find({
+      activeShift: true,
+    }).lean();
+    return team.map(this.sanitizeEmergencyTeamData);
+  }
+
+  // Lab-related methods
+  async findLabTestsAsync(options?: {
+    patientId?: string;
+    status?: string[];
+  }): Promise<LabTest[]> {
+    const query: any = {};
+    if (options?.patientId) query.patientId = options.patientId;
+    if (options?.status) query.status = { $in: options.status };
+
+    const tests = await Models.LabTest.find(query).lean();
+    return tests.map(this.sanitizeLabTestData);
+  }
+
+  async createLabTestAsync(
+    testData: Omit<LabTest, "_id" | "createdAt" | "updatedAt">
+  ): Promise<LabTest> {
+    const newTest = new Models.LabTest(testData);
+    await newTest.save();
+    return this.sanitizeLabTestData(newTest.toObject());
+  }
+
+  // Search methods
+  async findDoctorsAsync(params?: {
+    department?: string;
+    specialization?: string;
+  }): Promise<Doctor[]> {
+    const query: Record<string, any> = {};
+    if (params?.department) query.department = params.department;
+    if (params?.specialization) query.specialization = params.specialization;
+
+    const doctors = await Models.Doctor.find(query).lean();
+    return doctors.map(this.sanitizeDoctorData);
+  }
+
+  // Sanitization helper methods
+  private sanitizeStaffData(staff: any): MedicalStaff {
+    const baseFields = {
+      ...staff,
+      contactNumber: staff.contactNumber || undefined,
+      address: staff.address || undefined,
+      department: staff.department || undefined,
+    };
+
+    switch (staff.role) {
+      case "doctor":
+        return this.sanitizeDoctorData(baseFields);
+      case "nurse":
+        return this.sanitizeNurseData(baseFields);
+      case "emergency":
+        return this.sanitizeEmergencyTeamData(baseFields);
+      case "lab_technician":
+        return this.sanitizeLabTechnicianData(baseFields);
+      default:
+        return baseFields;
+    }
+  }
+
+  private sanitizeDoctorData(doctor: any): Doctor {
+    return {
+      ...doctor,
+      specialization: doctor.specialization || undefined,
+      availability: doctor.availability || undefined,
+      licenseNumber: doctor.licenseNumber || undefined,
+    };
+  }
+
+  private sanitizeNurseData(nurse: any): Nurse {
+    return {
+      ...nurse,
+      shift: nurse.shift || undefined,
+      certificationNumber: nurse.certificationNumber || undefined,
+    };
+  }
+
+  private sanitizeEmergencyTeamData(member: any): EmergencyTeamMember {
+    return {
+      ...member,
+      specializedTraining: member.specializedTraining || undefined,
+      certifications: member.certifications || undefined,
+      lastEmergencyResponse: member.lastEmergencyResponse || undefined,
+      responseTeamId: member.responseTeamId || undefined,
+    };
+  }
+
+  private sanitizeLabTechnicianData(tech: any): LabTechnician {
+    return {
+      ...tech,
+      specialization: tech.specialization || undefined,
+      certifications: tech.certifications || undefined,
+    };
+  }
+
+  private sanitizeLabTestData(test: any): LabTest {
+    return {
+      ...test,
+      notes: test.notes || undefined,
+      results: test.results || undefined,
+      completedAt: test.completedAt || undefined,
+    };
+  }
+
+  // Doctor-specific methods
+  async findDoctors(params?: {
+    department?: string;
+    specialization?: string;
+  }): Promise<Doctor[]> {
+    const query: Record<string, any> = { role: "doctor" };
+    if (params?.department) query.department = params.department;
+    if (params?.specialization) query.specialization = params.specialization;
+
+    const doctors = await Models.Doctor.find(query).lean();
+    return doctors.map(this.sanitizeDoctorData);
   }
 
   async findNursesAsync(): Promise<Nurse[]> {
-    return medicalStaff.filter(
-      (staff): staff is Nurse => staff.role === "nurse"
-    );
+    const nurses = await Models.Nurse.find().lean();
+    return nurses.map(this.sanitizeNurseData);
   }
 
-  async findAdminStaffAsync(): Promise<AdminStaff[]> {
-    return medicalStaff.filter(
-      (staff): staff is AdminStaff => staff.role === "admin"
-    );
+  async findAdminStaffAsync() {
+    const adminStaff = await Models.AdminStaff.find().lean();
+    return adminStaff;
   }
 
   async findStaffByDepartmentAsync(
     department: string
   ): Promise<MedicalStaff[]> {
-    return medicalStaff.filter((staff) => {
-      if (staff.role === "admin") {
-        return staff.managedDepartments?.includes(department);
-      }
-      return staff.department === department;
-    });
+    const [doctors, nurses, admins] = await Promise.all([
+      Models.Doctor.find({ department }).lean(),
+      Models.Nurse.find({ department }).lean(),
+      Models.AdminStaff.find({ department }).lean(),
+    ]);
+    return [...doctors, ...nurses, ...admins].map(this.sanitizeStaffData);
   }
 
-  async createAsync(
-    staff: Omit<MedicalStaff, "id" | "createdAt" | "updatedAt">
-  ): Promise<MedicalStaff> {
-    const baseStaff = {
-      id: medicalStaff.length + 1,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    const newStaff =
-      staff.role === "doctor"
-        ? ({ ...staff, ...baseStaff } as Doctor)
-        : ({ ...staff, ...baseStaff } as Nurse);
-
-    medicalStaff.push(newStaff);
-    return newStaff;
-  }
-
-  async updateAsync(
-    id: number,
-    staffData: Partial<MedicalStaff>
-  ): Promise<MedicalStaff | null> {
-    const index = medicalStaff.findIndex((s) => s.id === id);
-    if (index === -1) return null;
-
-    const currentStaff = medicalStaff[index];
-
-    if (currentStaff.role === "doctor") {
-      medicalStaff[index] = {
-        ...(currentStaff as Doctor),
-        ...staffData,
-        role: "doctor",
-        updatedAt: new Date(),
-      } as Doctor;
-    } else {
-      medicalStaff[index] = {
-        ...(currentStaff as Nurse),
-        ...staffData,
-        role: "nurse",
-        updatedAt: new Date(),
-      } as Nurse;
-    }
-
-    return medicalStaff[index];
-  }
-
-  async deleteAsync(id: number): Promise<boolean> {
-    const index = medicalStaff.findIndex((s) => s.id === id);
-    if (index === -1) return false;
-
-    medicalStaff.splice(index, 1);
-    return true;
-  }
-
-  async findEmergencyTeamAsync(): Promise<EmergencyTeamMember[]> {
-    return medicalStaff.filter(
-      (staff): staff is EmergencyTeamMember => staff.role === "emergency"
-    );
-  }
-
-  async findAvailableEmergencyTeamAsync(): Promise<EmergencyTeamMember[]> {
-    return medicalStaff.filter(
-      (staff): staff is EmergencyTeamMember =>
-        staff.role === "emergency" && staff.activeShift
-    );
-  }
-
+  // Emergency team methods
   async findEmergencyTeamByTriageLevelAsync(
     triageLevel: string
   ): Promise<EmergencyTeamMember[]> {
-    return medicalStaff.filter(
-      (staff): staff is EmergencyTeamMember =>
-        staff.role === "emergency" &&
-        staff.triageAccess.includes(triageLevel as any)
-    );
+    const team = await Models.EmergencyTeamMember.find({
+      activeShift: true,
+      "specializedTraining.triageLevel": triageLevel,
+    }).lean();
+    return team.map(this.sanitizeEmergencyTeamData);
   }
 
-  async createEmergencyCaseAsync(
-    caseData: Omit<EmergencyCase, "id" | "createdAt" | "updatedAt">
-  ): Promise<EmergencyCase> {
-    const newCase: EmergencyCase = {
-      ...caseData,
-      id: emergencyCases.length + 1,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    emergencyCases.push(newCase);
-    return newCase;
+  async findEmergencyCaseByIdAsync(caseId: string) {
+    return await Models.EmergencyCase.findById(caseId).lean();
   }
 
-  async updateEmergencyCaseAsync(
-    id: number,
-    caseData: Partial<EmergencyCase>
-  ): Promise<EmergencyCase | null> {
-    const index = emergencyCases.findIndex((c) => c.id === id);
-    if (index === -1) return null;
-
-    emergencyCases[index] = {
-      ...emergencyCases[index],
-      ...caseData,
-      updatedAt: new Date(),
-    };
-    return emergencyCases[index];
+  async createEmergencyCaseAsync(caseData: any) {
+    const newCase = new Models.EmergencyCase(caseData);
+    await newCase.save();
+    return newCase.toObject();
   }
 
-  async findEmergencyCaseByIdAsync(id: number): Promise<EmergencyCase | null> {
-    return emergencyCases.find((c) => c.id === id) || null;
+  async updateEmergencyCaseAsync(caseId: string, updateData: any) {
+    return await Models.EmergencyCase.findByIdAndUpdate(
+      caseId,
+      { $set: updateData },
+      { new: true }
+    ).lean();
   }
 
-  async findActiveEmergencyCasesAsync(): Promise<EmergencyCase[]> {
-    return emergencyCases.filter(
-      (c) => c.status !== "resolved" && c.status !== "transferred"
-    );
+  async findActiveEmergencyCasesAsync() {
+    return await Models.EmergencyCase.find({
+      status: { $in: ["pending", "in_progress"] },
+    }).lean();
   }
 
+  // Lab-related methods
   async findLabTechniciansAsync(): Promise<LabTechnician[]> {
-    return medicalStaff.filter(
-      (staff): staff is LabTechnician => staff.role === "lab_technician"
-    );
+    const technicians = await Models.LabTechnician.find().lean();
+    return technicians.map(this.sanitizeLabTechnicianData);
   }
 
   async findAvailableLabTechniciansAsync(
     testType: string
   ): Promise<LabTechnician[]> {
-    return medicalStaff.filter(
-      (staff): staff is LabTechnician =>
-        staff.role === "lab_technician" &&
-        staff.activeShift &&
-        staff.specialization.includes(testType as any)
-    );
+    const technicians = await Models.LabTechnician.find({
+      activeShift: true,
+      "specialization.testTypes": testType,
+    }).lean();
+    return technicians.map(this.sanitizeLabTechnicianData);
   }
 
-  async createLabTestAsync(
-    testData: Omit<LabTest, "id" | "createdAt" | "updatedAt">
-  ): Promise<LabTest> {
-    const newTest: LabTest = {
-      ...testData,
-      id: labTests.length + 1,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    labTests.push(newTest);
-    return newTest;
+  async findLabTestByIdAsync(testId: string) {
+    return await Models.LabTest.findById(testId).lean();
   }
 
-  async updateLabTestAsync(
-    id: number,
-    testData: Partial<LabTest>
-  ): Promise<LabTest | null> {
-    const index = labTests.findIndex((t) => t.id === id);
-    if (index === -1) return null;
-
-    labTests[index] = {
-      ...labTests[index],
-      ...testData,
-      updatedAt: new Date(),
-    };
-    return labTests[index];
+  async updateLabTestAsync(testId: string, updateData: any) {
+    return await Models.LabTest.findByIdAndUpdate(
+      testId,
+      { $set: updateData },
+      { new: true }
+    ).lean();
   }
 
-  async findLabTestByIdAsync(id: number): Promise<LabTest | null> {
-    return labTests.find((t) => t.id === id) || null;
+  async findLabTestsByPatientAsync(patientId: string) {
+    const tests = await Models.LabTest.find({ patientId }).lean();
+    return tests.map(this.sanitizeLabTestData);
   }
 
-  async findLabTestsByPatientAsync(patientId: number): Promise<LabTest[]> {
-    return labTests.filter((t) => t.patientId === patientId);
+  async findPendingLabTestsAsync() {
+    const tests = await Models.LabTest.find({
+      status: "scheduled",
+    }).lean();
+    return tests.map(this.sanitizeLabTestData);
   }
 
-  async findPendingLabTestsAsync(): Promise<LabTest[]> {
-    return labTests.filter(
-      (t) => t.status === "scheduled" || t.status === "in_progress"
-    );
+  // Appointment-related methods
+  async findByDoctorAndDateRange(
+    doctorId: string,
+    startDate: Date,
+    endDate: Date
+  ) {
+    return await Models.Appointment.find({
+      doctorId,
+      dateTime: {
+        $gte: startDate,
+        $lte: endDate,
+      },
+    }).lean();
   }
 
-  async findDoctors({
-    department,
-    specialization,
-  }: {
-    department?: string;
-    specialization?: string;
-  }): Promise<Doctor[]> {
-    let doctors = await this.findDoctorsAsync();
+  async findBusyDoctors(
+    date: Date,
+    startTime: string,
+    endTime: string
+  ): Promise<string[]> {
+    const startDateTime = new Date(date);
+    const [startHour, startMinute] = startTime.split(":").map(Number);
+    startDateTime.setHours(startHour, startMinute, 0);
 
-    if (department) {
-      doctors = doctors.filter(doctor => doctor.department === department);
-    }
+    const endDateTime = new Date(date);
+    const [endHour, endMinute] = endTime.split(":").map(Number);
+    endDateTime.setHours(endHour, endMinute, 0);
 
-    if (specialization) {
-      doctors = doctors.filter(doctor => doctor.specialization === specialization);
-    }
+    const busyAppointments = await Models.Appointment.find({
+      dateTime: {
+        $lt: endDateTime,
+        $gt: startDateTime,
+      },
+    })
+      .distinct("doctorId")
+      .lean();
 
-    return doctors;
+    return busyAppointments.map((id) => id.toString());
+  }
+
+  // Examination-related methods
+  async createExaminationAsync(examinationData: any) {
+    const examination = new Models.Examination(examinationData);
+    await examination.save();
+    return examination.toObject();
+  }
+
+  async findExaminationByIdAsync(id: string) {
+    return await Models.Examination.findById(id).lean();
+  }
+
+  async updateExaminationAsync(id: string, updateData: any) {
+    return await Models.Examination.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true }
+    ).lean();
+  }
+
+  async findExaminationsByDoctorAsync(
+    doctorId: string,
+    startDate: Date,
+    endDate: Date
+  ) {
+    return await Models.Examination.find({
+      doctorId,
+      scheduledDate: {
+        $gte: startDate,
+        $lte: endDate,
+      },
+    }).lean();
+  }
+
+  async findPendingExaminationsAsync() {
+    return await Models.Examination.find({
+      status: "scheduled",
+    }).lean();
   }
 }
 

@@ -6,13 +6,11 @@ import {
 import { healthCheckRegistry } from "@/api/healthCheck/healthCheckRouter";
 import { patientRegistry } from "@/api/patient/patientRouter";
 import { staffRegistry } from "@/api/staff/staffRouter";
-import { wardRegistry } from "@/api/staff/wardRouter";
-import { userRegistry } from "@/api/user/userRouter";
+import { wardRegistry } from "@/api/ward/wardRouter";
 
 export function generateOpenAPIDocument() {
   const registry = new OpenAPIRegistry([
     healthCheckRegistry,
-    userRegistry,
     patientRegistry,
     staffRegistry,
     wardRegistry,

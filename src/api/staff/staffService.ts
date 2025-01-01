@@ -59,7 +59,7 @@ export class StaffService {
     }
   }
 
-  async findById(id: number) {
+  async findById(id: string) {
     try {
       const staff = await staffRepository.findByIdAsync(id);
       if (!staff) {
@@ -82,9 +82,7 @@ export class StaffService {
     }
   }
 
-  async create(
-    staffData: Omit<MedicalStaff, "id" | "createdAt" | "updatedAt">
-  ) {
+  async create(staffData: Omit<MedicalStaff, "createdAt" | "updatedAt">) {
     try {
       const staff = await staffRepository.createAsync(staffData);
       return ServiceResponse.success(
@@ -101,7 +99,7 @@ export class StaffService {
     }
   }
 
-  async update(id: number, staffData: Partial<MedicalStaff>) {
+  async update(id: string, staffData: Partial<MedicalStaff>) {
     try {
       const staff = await staffRepository.updateAsync(id, staffData);
       if (!staff) {
@@ -124,7 +122,7 @@ export class StaffService {
     }
   }
 
-  async delete(id: number) {
+  async delete(id: string) {
     try {
       const success = await staffRepository.deleteAsync(id);
       if (!success) {
@@ -145,7 +143,7 @@ export class StaffService {
   }
 
   // Additional methods specific to doctors and nurses
-  async getDoctorAvailability(doctorId: number) {
+  async getDoctorAvailability(doctorId: string) {
     try {
       const staff = await staffRepository.findByIdAsync(doctorId);
       if (!staff || staff.role !== "doctor") {
@@ -169,7 +167,7 @@ export class StaffService {
   }
 
   async updateDoctorAvailability(
-    doctorId: number,
+    doctorId: string,
     availability: Doctor["availability"]
   ) {
     try {
@@ -200,7 +198,7 @@ export class StaffService {
     }
   }
 
-  async updateNurseShift(nurseId: number, shift: Nurse["shift"]) {
+  async updateNurseShift(nurseId: string, shift: Nurse["shift"]) {
     try {
       const staff = await staffRepository.findByIdAsync(nurseId);
       if (!staff || staff.role !== "nurse") {
@@ -269,7 +267,7 @@ export class StaffService {
   }
 
   async updateAdminAccess(
-    adminId: number,
+    adminId: string,
     accessLevel: AdminStaff["accessLevel"]
   ) {
     try {
@@ -300,7 +298,7 @@ export class StaffService {
     }
   }
 
-  async updateManagedDepartments(adminId: number, departments: string[]) {
+  async updateManagedDepartments(adminId: string, departments: string[]) {
     try {
       const staff = await staffRepository.findByIdAsync(adminId);
       if (!staff || staff.role !== "admin") {
@@ -329,7 +327,7 @@ export class StaffService {
     }
   }
 
-  async updateResponsibilities(adminId: number, responsibilities: string[]) {
+  async updateResponsibilities(adminId: string, responsibilities: string[]) {
     try {
       const staff = await staffRepository.findByIdAsync(adminId);
       if (!staff || staff.role !== "admin") {
@@ -401,14 +399,14 @@ export class StaffService {
   async createEmergencyCase(
     caseData: Omit<
       EmergencyCase,
-      "id" | "createdAt" | "updatedAt" | "assignedTeamMembers" | "status"
+      "_id" | "createdAt" | "updatedAt" | "assignedTeamMembers" | "status"
     >
   ) {
     try {
       // Find available team members qualified for the triage level
       const availableTeam =
         await staffRepository.findEmergencyTeamByTriageLevelAsync(
-          caseData.triageLevel
+          caseData.severity
         );
 
       if (!availableTeam.length) {
@@ -440,7 +438,7 @@ export class StaffService {
   }
 
   async updateEmergencyCaseStatus(
-    caseId: number,
+    caseId: string,
     status: EmergencyCase["status"]
   ) {
     try {
@@ -477,7 +475,7 @@ export class StaffService {
     }
   }
 
-  async reassignEmergencyTeam(caseId: number, teamMemberIds: number[]) {
+  async reassignEmergencyTeam(caseId: string, teamMemberIds: string[]) {
     try {
       const existingCase = await staffRepository.findEmergencyCaseByIdAsync(
         caseId
@@ -543,7 +541,7 @@ export class StaffService {
   }
 
   async updateEmergencyTeamMemberStatus(
-    memberId: number,
+    memberId: string,
     activeShift: boolean
   ) {
     try {
@@ -626,12 +624,14 @@ export class StaffService {
     try {
       // Find available technician for the test type
       const availableTechs =
-        await staffRepository.findAvailableLabTechniciansAsync(testData.type);
+        await staffRepository.findAvailableLabTechniciansAsync(
+          testData.testType
+        );
 
       const labTest = await staffRepository.createLabTestAsync({
         ...testData,
         technicianId: availableTechs[0]?.id, // Assign first available technician if any
-        status: "scheduled",
+        status: "pending",
       });
 
       return ServiceResponse.success(
@@ -649,7 +649,7 @@ export class StaffService {
   }
 
   async updateLabTestStatus(
-    testId: number,
+    testId: string,
     status: LabTest["status"],
     results?: LabTest["results"]
   ) {
@@ -666,7 +666,7 @@ export class StaffService {
 
       const updateData: Partial<LabTest> = {
         status,
-        completedDate: status === "completed" ? new Date() : undefined,
+        completedAt: status === "completed" ? new Date() : undefined,
         results: status === "completed" ? results : undefined,
       };
 
@@ -687,7 +687,7 @@ export class StaffService {
     }
   }
 
-  async reassignLabTechnician(testId: number, technicianId: number) {
+  async reassignLabTechnician(testId: string, technicianId: string) {
     try {
       const [existingTest, technician] = await Promise.all([
         staffRepository.findLabTestByIdAsync(testId),
@@ -726,7 +726,7 @@ export class StaffService {
     }
   }
 
-  async getPatientLabTests(patientId: number) {
+  async getPatientLabTests(patientId: string) {
     try {
       const tests = await staffRepository.findLabTestsByPatientAsync(patientId);
       return ServiceResponse.success(
@@ -758,7 +758,7 @@ export class StaffService {
     }
   }
 
-  async updateLabTechnicianStatus(technicianId: number, activeShift: boolean) {
+  async updateLabTechnicianStatus(technicianId: string, activeShift: boolean) {
     try {
       const technician = await staffRepository.findByIdAsync(technicianId);
 
@@ -792,7 +792,7 @@ export class StaffService {
   }
 
   async getDoctorSchedule(
-    doctorId: number,
+    doctorId: string,
     startDate: Date,
     endDate: Date
   ): Promise<ServiceResponse<DoctorSchedule[]>> {
@@ -921,7 +921,7 @@ export class StaffService {
     startTime: string;
     endTime: string;
     isAvailable: boolean;
-    appointmentId?: number;
+    appointmentId?: string;
   }> {
     const slots = [];
     const [startHour] = startTime.split(":").map(Number);
@@ -952,7 +952,7 @@ export class StaffService {
           startTime: slotStart,
           endTime: slotEnd,
           isAvailable: !conflictingAppointment,
-          appointmentId: conflictingAppointment?.id,
+          appointmentId: conflictingAppointment?._id,
         });
       }
     }
@@ -1039,7 +1039,7 @@ export class StaffService {
   }
 
   async updateExaminationStatus(
-    id: number,
+    id: string,
     status: Examination["status"],
     results?: Examination["results"],
     cancelReason?: string
@@ -1085,7 +1085,7 @@ export class StaffService {
   }
 
   async getDoctorExaminations(
-    doctorId: number,
+    doctorId: string,
     startDate: Date,
     endDate: Date
   ) {
@@ -1127,7 +1127,7 @@ export class StaffService {
   }
 
   async checkDoctorAvailability(
-    doctorId: number,
+    doctorId: string,
     dateTime: Date
   ): Promise<boolean> {
     const doctor = await staffRepository.findByIdAsync(doctorId);

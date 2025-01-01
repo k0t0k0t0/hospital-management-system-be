@@ -1,116 +1,249 @@
 import type { Appointment } from "../patient/patientModel";
-import type { Examination } from "../staff/examModel";
-
-export const appointments: Appointment[] = [];
-export const examinations: Examination[] = [];
+import type { Examination } from "./staffModel";
+import { Models } from "./staffSchema";
 
 export class AppointmentRepository {
-  async findByDoctorAndDateRange(
-    doctorId: number,
+  async findAllAsync(): Promise<Examination[]> {
+    const examinations = await Models.Examination.find().lean();
+    return examinations.map(this.sanitizeExaminationData);
+  }
+
+  async findByIdAsync(id: string): Promise<Examination | null> {
+    const examination = await Models.Examination.findById(id).lean();
+    return examination ? this.sanitizeExaminationData(examination) : null;
+  }
+
+  async createAsync(
+    examination: Omit<Examination, "_id" | "status" | "createdAt" | "updatedAt">
+  ): Promise<Examination> {
+    const newExamination = new Models.Examination({
+      ...examination,
+      status: "scheduled",
+    });
+    await newExamination.save();
+    return this.sanitizeExaminationData(newExamination.toObject());
+  }
+
+  async updateAsync(
+    id: string,
+    examinationData: Partial<Examination>
+  ): Promise<Examination | null> {
+    const updated = await Models.Examination.findByIdAndUpdate(
+      id,
+      { $set: examinationData },
+      { new: true }
+    ).lean();
+    return updated ? this.sanitizeExaminationData(updated) : null;
+  }
+
+  async deleteAsync(id: string): Promise<boolean> {
+    const result = await Models.Examination.findByIdAndDelete(id);
+    return result !== null;
+  }
+
+  // Search methods
+  async findByDoctorAndDateRangeAsync(
+    doctorId: string,
     startDate: Date,
     endDate: Date
-  ): Promise<Appointment[]> {
-    return appointments.filter(
-      (apt) =>
-        apt.doctorId === doctorId &&
-        apt.dateTime >= startDate &&
-        apt.dateTime <= endDate
-    );
+  ): Promise<Examination[]> {
+    const examinations = await Models.Examination.find({
+      doctorId,
+      scheduledDate: {
+        $gte: startDate,
+        $lte: endDate,
+      },
+    }).lean();
+    return examinations.map(this.sanitizeExaminationData);
   }
+
+  async findByPatientAsync(patientId: string): Promise<Examination[]> {
+    const examinations = await Models.Examination.find({ patientId }).lean();
+    return examinations.map(this.sanitizeExaminationData);
+  }
+
+  async findPendingAsync(): Promise<Examination[]> {
+    const examinations = await Models.Examination.find({
+      status: {
+        $in: ["scheduled", "in_progress"],
+      },
+    }).lean();
+    return examinations.map(this.sanitizeExaminationData);
+  }
+
+  async findUpcomingByDoctorAsync(
+    doctorId: string,
+    fromDate: Date = new Date()
+  ): Promise<Examination[]> {
+    const examinations = await Models.Examination.find({
+      doctorId,
+      scheduledDate: { $gte: fromDate },
+      status: "scheduled",
+    })
+      .sort({ scheduledDate: 1 })
+      .lean();
+    return examinations.map(this.sanitizeExaminationData);
+  }
+
+  // Status update methods
+  async updateStatusAsync(
+    id: string,
+    status: string,
+    notes?: string
+  ): Promise<Examination | null> {
+    const update: any = { status };
+    if (notes) update.notes = notes;
+    if (status === "completed") update.completedAt = new Date();
+
+    const updated = await Models.Examination.findByIdAndUpdate(
+      id,
+      { $set: update },
+      { new: true }
+    ).lean();
+    return updated ? this.sanitizeExaminationData(updated) : null;
+  }
+
+  // Sanitization helper method
+  private sanitizeExaminationData(examination: any): Examination {
+    return {
+      ...examination,
+      notes: examination.notes || undefined,
+      diagnosis: examination.diagnosis || undefined,
+      prescription: examination.prescription || undefined,
+      completedAt: examination.completedAt || undefined,
+      cancelReason: examination.cancelReason || undefined,
+      followUpDate: examination.followUpDate || undefined,
+    };
+  }
+
+  // Add these new methods:
+  // async findByDoctorAndDateRange(
+  //   doctorId: string,
+  //   startDate: Date,
+  //   endDate: Date
+  // ): Promise<Appointment[]> {
+  //   const appointments = await Models.Appointment.find({
+  //     doctorId,
+  //     dateTime: {
+  //       $gte: startDate,
+  //       $lte: endDate,
+  //     },
+  //   }).lean();
+
+  //   return appointments.map(apt => ({
+  //     ...apt,
+  //     patientId: apt.patientId.toString(),
+  //     doctorId: apt.doctorId.toString(),
+  //   }));
+  // }
 
   async findBusyDoctors(
     date: Date,
     startTime: string,
     endTime: string
-  ): Promise<number[]> {
-    const dayStart = new Date(date);
-    dayStart.setHours(0, 0, 0, 0);
-
-    const dayEnd = new Date(date);
-    dayEnd.setHours(23, 59, 59, 999);
-
+  ): Promise<string[]> {
+    // Convert date and times to Date objects for comparison
+    const startDateTime = new Date(date);
     const [startHour, startMinute] = startTime.split(":").map(Number);
+    startDateTime.setHours(startHour, startMinute, 0);
+
+    const endDateTime = new Date(date);
     const [endHour, endMinute] = endTime.split(":").map(Number);
+    endDateTime.setHours(endHour, endMinute, 0);
 
-    const busyDoctors = new Set<number>();
+    // Find appointments that overlap with the requested time slot
+    const busyAppointments = await Models.Appointment.find({
+      dateTime: {
+        $lt: endDateTime,
+      },
+      $expr: {
+        $gt: {
+          $add: ["$dateTime", { $multiply: ["$duration", 60000] }], // Convert duration to milliseconds
+        },
+        startDateTime,
+      },
+      status: { $in: ["scheduled", "confirmed"] },
+    }).lean();
 
-    appointments
-      .filter((apt) => apt.dateTime >= dayStart && apt.dateTime <= dayEnd)
-      .forEach((apt) => {
-        const aptHour = apt.dateTime.getHours();
-        const aptMinute = apt.dateTime.getMinutes();
-        const aptEndHour = aptHour + Math.floor(apt.duration / 60);
-        const aptEndMinute = aptMinute + (apt.duration % 60);
-
-        if (
-          (aptHour > startHour ||
-            (aptHour === startHour && aptMinute >= startMinute)) &&
-          (aptEndHour < endHour ||
-            (aptEndHour === endHour && aptEndMinute <= endMinute))
-        ) {
-          busyDoctors.add(apt.doctorId);
-        }
-      });
-
-    return Array.from(busyDoctors);
-  }
-
-  async findExaminationByIdAsync(id: number): Promise<Examination | null> {
-    return examinations.find((exam) => exam.id === id) || null;
-  }
-
-  async createExaminationAsync(
-    examination: Omit<Examination, "id" | "status" | "createdAt" | "updatedAt">
-  ): Promise<Examination> {
-    const newExamination: Examination = {
-      ...examination,
-      id: examinations.length + 1,
-      status: "scheduled",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    examinations.push(newExamination);
-    return newExamination;
-  }
-
-  async updateExaminationAsync(
-    id: number,
-    examinationData: Partial<Examination>
-  ): Promise<Examination | null> {
-    const index = examinations.findIndex((e) => e.id === id);
-    if (index === -1) return null;
-
-    examinations[index] = {
-      ...examinations[index],
-      ...examinationData,
-      updatedAt: new Date(),
-    };
-    return examinations[index];
-  }
-
-  async findExaminationsByPatientAsync(
-    patientId: number
-  ): Promise<Examination[]> {
-    return examinations.filter((exam) => exam.patientId === patientId);
+    // Return array of unique doctor IDs
+    return [...new Set(busyAppointments.map((apt) => apt.doctorId.toString()))];
   }
 
   async findExaminationsByDoctorAsync(
-    doctorId: number,
+    doctorId: string,
     startDate: Date,
     endDate: Date
   ): Promise<Examination[]> {
-    return examinations.filter(
-      (exam) =>
-        exam.doctorId === doctorId &&
-        exam.scheduledDate >= startDate &&
-        exam.scheduledDate <= endDate
-    );
+    const examinations = await Models.Examination.find({
+      doctorId,
+      scheduledDate: {
+        $gte: startDate,
+        $lte: endDate,
+      },
+    }).lean();
+    return examinations.map(this.sanitizeExaminationData);
+  }
+
+  async findExaminationByIdAsync(id: string): Promise<Examination | null> {
+    const examination = await Models.Examination.findById(id).lean();
+    return examination ? this.sanitizeExaminationData(examination) : null;
   }
 
   async findPendingExaminationsAsync(): Promise<Examination[]> {
-    return examinations.filter(
-      (exam) => exam.status === "scheduled" || exam.status === "in_progress"
-    );
+    const examinations = await Models.Examination.find({
+      status: "scheduled",
+    }).lean();
+    return examinations.map(this.sanitizeExaminationData);
+  }
+
+  async createExaminationAsync(
+    examinationData: Omit<
+      Examination,
+      "_id" | "status" | "createdAt" | "updatedAt"
+    >
+  ): Promise<Examination> {
+    const newExamination = new Models.Examination({
+      ...examinationData,
+      status: "scheduled",
+    });
+    await newExamination.save();
+    return this.sanitizeExaminationData(newExamination.toObject());
+  }
+
+  async updateExaminationAsync(
+    id: string,
+    updateData: Partial<Examination>
+  ): Promise<Examination | null> {
+    const updated = await Models.Examination.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true }
+    ).lean();
+    return updated ? this.sanitizeExaminationData(updated) : null;
+  }
+
+  private sanitizeAppointmentData(apt: any): Appointment {
+    return {
+      ...apt,
+      notes: apt.notes || undefined,
+      cancelReason: apt.cancelReason || undefined,
+      cancelledAt: apt.cancelledAt || undefined,
+      patientId: apt.patientId.toString(),
+      doctorId: apt.doctorId.toString(),
+    };
+  }
+
+  async findByDoctorAndDateRange(
+    doctorId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<Appointment[]> {
+    const appointments = await Models.Appointment.find({
+      doctorId,
+      dateTime: { $gte: startDate, $lte: endDate },
+    }).lean();
+
+    return appointments.map(this.sanitizeAppointmentData);
   }
 }
 

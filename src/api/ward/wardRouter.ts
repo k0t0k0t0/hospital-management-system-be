@@ -1,8 +1,8 @@
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
 import { validateRequest } from "@/common/utils/httpHandlers";
+import { z } from "@/common/utils/zodExtensions";
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { Router } from "express";
-import { z } from "zod";
 import { wardController } from "./wardController";
 import {
   BedSchema,

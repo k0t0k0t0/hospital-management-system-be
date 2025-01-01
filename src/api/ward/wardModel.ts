@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/common/utils/zodExtensions";
 
 export const WardTypeEnum = z.enum([
   "general",

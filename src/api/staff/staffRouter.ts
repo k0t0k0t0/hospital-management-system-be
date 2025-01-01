@@ -1,6 +1,6 @@
+import { z } from "@/common/utils/zodExtensions";
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import express, { type Router } from "express";
-import { z } from "zod";
 
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
 import {
@@ -8,6 +8,8 @@ import {
   CreateAdminStaffSchema,
   CreateDoctorSchema,
   CreateEmergencyCaseSchema,
+  CreateEmergencyTeamMemberSchema,
+  CreateLabTechnicianSchema,
   CreateLabTestSchema,
   CreateNurseSchema,
   DoctorScheduleSchema,
@@ -105,6 +107,9 @@ staffRegistry.registerPath({
           schema: z.discriminatedUnion("role", [
             CreateDoctorSchema,
             CreateNurseSchema,
+            CreateAdminStaffSchema,
+            CreateEmergencyTeamMemberSchema,
+            CreateLabTechnicianSchema,
           ]),
         },
       },
@@ -123,6 +128,9 @@ staffRouter.post(
       body: z.discriminatedUnion("role", [
         CreateDoctorSchema,
         CreateNurseSchema,
+        CreateAdminStaffSchema,
+        CreateEmergencyTeamMemberSchema,
+        CreateLabTechnicianSchema,
       ]),
     })
   ),
