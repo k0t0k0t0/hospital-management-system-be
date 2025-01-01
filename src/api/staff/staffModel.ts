@@ -18,15 +18,7 @@ export const StaffBaseSchema = z.object({
 
 // Doctor-specific schemas
 export const DoctorAvailabilitySchema = z.object({
-  day: z.enum([
-    "monday",
-    "tuesday",
-    "wednesday",
-    "thursday",
-    "friday",
-    "saturday",
-    "sunday",
-  ]),
+  day: z.enum(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]),
   startTime: z.string(),
   endTime: z.string(),
 });
@@ -54,12 +46,7 @@ export const AdminStaffSchema = StaffBaseSchema.extend({
 });
 
 // Emergency team schema
-export const EmergencyRoleEnum = z.enum([
-  "team_lead",
-  "first_responder",
-  "trauma_specialist",
-  "emergency_nurse",
-]);
+export const EmergencyRoleEnum = z.enum(["team_lead", "first_responder", "trauma_specialist", "emergency_nurse"]);
 
 export const TriageLevelEnum = z.enum([
   "level1_resuscitation",
@@ -99,12 +86,7 @@ export const LabTechnicianSchema = StaffBaseSchema.extend({
 });
 
 // Lab Test schema
-export const LabTestStatusEnum = z.enum([
-  "pending",
-  "in_progress",
-  "completed",
-  "cancelled",
-]);
+export const LabTestStatusEnum = z.enum(["pending", "in_progress", "completed", "cancelled"]);
 
 export const LabTestSchema = z.object({
   _id: z.string(),
@@ -201,7 +183,7 @@ export const DoctorScheduleSchema = z.object({
       endTime: z.string(),
       isAvailable: z.boolean(),
       appointmentId: z.string().optional(),
-    })
+    }),
   ),
 });
 

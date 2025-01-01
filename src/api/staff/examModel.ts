@@ -1,18 +1,8 @@
 import { z } from "@/common/utils/zodExtensions";
 
-export const ExaminationStatusEnum = z.enum([
-  "scheduled",
-  "in_progress",
-  "completed",
-  "cancelled",
-]);
+export const ExaminationStatusEnum = z.enum(["scheduled", "in_progress", "completed", "cancelled"]);
 
-export const ExaminationTypeEnum = z.enum([
-  "physical",
-  "laboratory",
-  "imaging",
-  "specialist",
-]);
+export const ExaminationTypeEnum = z.enum(["physical", "laboratory", "imaging", "specialist"]);
 
 export const ExaminationSchema = z.object({
   id: z.string(),

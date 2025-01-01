@@ -1,9 +1,4 @@
-import type {
-  Bed,
-  PatientAssignment,
-  Ward,
-  WardResource,
-} from "./wardModel";
+import type { Bed, PatientAssignment, Ward, WardResource } from "./wardModel";
 import { Models } from "./wardMongoSchema";
 
 export class WardRepository {
@@ -18,9 +13,7 @@ export class WardRepository {
     return ward ? this.sanitizeWardData(ward) : null;
   }
 
-  async createWardAsync(
-    wardData: Omit<Ward, "id" | "currentOccupancy" | "createdAt" | "updatedAt">
-  ): Promise<Ward> {
+  async createWardAsync(wardData: Omit<Ward, "id" | "currentOccupancy" | "createdAt" | "updatedAt">): Promise<Ward> {
     const newWard = new Models.Ward({
       ...wardData,
       currentOccupancy: 0,
@@ -29,15 +22,8 @@ export class WardRepository {
     return this.sanitizeWardData(newWard.toObject());
   }
 
-  async updateWardAsync(
-    id: number,
-    wardData: Partial<Ward>
-  ): Promise<Ward | null> {
-    const updated = await Models.Ward.findByIdAndUpdate(
-      id,
-      { $set: wardData },
-      { new: true }
-    ).lean();
+  async updateWardAsync(id: number, wardData: Partial<Ward>): Promise<Ward | null> {
+    const updated = await Models.Ward.findByIdAndUpdate(id, { $set: wardData }, { new: true }).lean();
     return updated ? this.sanitizeWardData(updated) : null;
   }
 
@@ -55,11 +41,7 @@ export class WardRepository {
     return beds.map(this.sanitizeBedData);
   }
 
-  async updateBedStatusAsync(
-    bedId: number,
-    status: string,
-    patientId?: number
-  ): Promise<Bed | null> {
+  async updateBedStatusAsync(bedId: number, status: string, patientId?: number): Promise<Bed | null> {
     const update: any = {
       status,
       currentPatientId: patientId,
@@ -69,17 +51,13 @@ export class WardRepository {
       update.lastOccupiedAt = new Date();
     }
 
-    const updated = await Models.Bed.findByIdAndUpdate(
-      bedId,
-      { $set: update },
-      { new: true }
-    ).lean();
+    const updated = await Models.Bed.findByIdAndUpdate(bedId, { $set: update }, { new: true }).lean();
     return updated ? this.sanitizeBedData(updated) : null;
   }
 
   // Patient assignment methods
   async createPatientAssignmentAsync(
-    assignmentData: Omit<PatientAssignment, "id" | "assignedAt" | "status">
+    assignmentData: Omit<PatientAssignment, "id" | "assignedAt" | "status">,
   ): Promise<PatientAssignment> {
     const newAssignment = new Models.PatientAssignment({
       ...assignmentData,
@@ -90,15 +68,8 @@ export class WardRepository {
     return this.sanitizePatientAssignmentData(newAssignment.toObject());
   }
 
-  async updatePatientAssignmentAsync(
-    id: number,
-    data: Partial<PatientAssignment>
-  ): Promise<PatientAssignment | null> {
-    const updated = await Models.PatientAssignment.findByIdAndUpdate(
-      id,
-      { $set: data },
-      { new: true }
-    ).lean();
+  async updatePatientAssignmentAsync(id: number, data: Partial<PatientAssignment>): Promise<PatientAssignment | null> {
+    const updated = await Models.PatientAssignment.findByIdAndUpdate(id, { $set: data }, { new: true }).lean();
     return updated ? this.sanitizePatientAssignmentData(updated) : null;
   }
 
@@ -106,7 +77,7 @@ export class WardRepository {
   async updateWardResourceAsync(
     wardId: number,
     resourceId: number,
-    update: Partial<WardResource>
+    update: Partial<WardResource>,
   ): Promise<WardResource | null> {
     const updated = await Models.WardResource.findOneAndUpdate(
       { wardId, _id: resourceId },
@@ -116,7 +87,7 @@ export class WardRepository {
           lastRestockedAt: new Date(),
         },
       },
-      { new: true }
+      { new: true },
     ).lean();
     return updated ? this.sanitizeWardResourceData(updated) : null;
   }
@@ -133,9 +104,7 @@ export class WardRepository {
     return resources.map(this.sanitizeWardResourceData);
   }
 
-  async createBedAsync(
-    bedData: Omit<Bed, "id" | "lastOccupiedAt">
-  ): Promise<Bed> {
+  async createBedAsync(bedData: Omit<Bed, "id" | "lastOccupiedAt">): Promise<Bed> {
     const newBed = new Models.Bed(bedData);
     await newBed.save();
     return this.sanitizeBedData(newBed.toObject());

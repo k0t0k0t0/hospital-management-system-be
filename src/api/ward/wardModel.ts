@@ -11,20 +11,9 @@ export const WardTypeEnum = z.enum([
   "isolation",
 ]);
 
-export const BedStatusEnum = z.enum([
-  "available",
-  "occupied",
-  "reserved",
-  "maintenance",
-  "cleaning",
-]);
+export const BedStatusEnum = z.enum(["available", "occupied", "reserved", "maintenance", "cleaning"]);
 
-export const ResourceTypeEnum = z.enum([
-  "medical_equipment",
-  "medication",
-  "supplies",
-  "staff",
-]);
+export const ResourceTypeEnum = z.enum(["medical_equipment", "medication", "supplies", "staff"]);
 
 export const BedSchema = z.object({
   id: z.number(),

@@ -1,12 +1,7 @@
 import { z } from "@/common/utils/zodExtensions";
 import { model } from "mongoose";
 import { commonValidations } from "../../common/utils/commonValidation";
-import {
-  appointmentSchema,
-  emergencyVisitSchema,
-  messageSchema,
-  patientSchema,
-} from "./patientSchema";
+import { appointmentSchema, emergencyVisitSchema, messageSchema, patientSchema } from "./patientSchema";
 
 // Base schemas
 export const EmergencyContactSchema = z.object({
@@ -31,13 +26,7 @@ export const InsuranceInfoSchema = z.object({
 });
 
 // Enums
-export const AppointmentStatusEnum = z.enum([
-  "scheduled",
-  "confirmed",
-  "completed",
-  "cancelled",
-  "no_show",
-]);
+export const AppointmentStatusEnum = z.enum(["scheduled", "confirmed", "completed", "cancelled", "no_show"]);
 
 export const AppointmentTypeEnum = z.enum([
   "regular_checkup",
@@ -48,19 +37,9 @@ export const AppointmentTypeEnum = z.enum([
   "lab_work",
 ]);
 
-export const MessageStatusEnum = z.enum([
-  "sent",
-  "delivered",
-  "read",
-  "archived",
-]);
+export const MessageStatusEnum = z.enum(["sent", "delivered", "read", "archived"]);
 
-export const EmergencySeverityEnum = z.enum([
-  "CRITICAL",
-  "SEVERE",
-  "MODERATE",
-  "MILD",
-]);
+export const EmergencySeverityEnum = z.enum(["CRITICAL", "SEVERE", "MODERATE", "MILD"]);
 
 // Complex schemas
 export const PatientSchema = z.object({
@@ -190,7 +169,4 @@ export type VitalSigns = z.infer<typeof VitalSignsSchema>;
 export const PatientModel = model("Patient", patientSchema);
 export const AppointmentModel = model("Appointment", appointmentSchema);
 export const MessageModel = model("Message", messageSchema);
-export const EmergencyVisitModel = model(
-  "EmergencyVisit",
-  emergencyVisitSchema
-);
+export const EmergencyVisitModel = model("EmergencyVisit", emergencyVisitSchema);

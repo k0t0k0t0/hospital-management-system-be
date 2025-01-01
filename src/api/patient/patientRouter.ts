@@ -27,10 +27,7 @@ patientRegistry.registerPath({
   method: "get",
   path: "/patients",
   tags: ["Patients"],
-  responses: createApiResponse(
-    z.array(PatientSchema),
-    "Successfully retrieved all patients"
-  ),
+  responses: createApiResponse(z.array(PatientSchema), "Successfully retrieved all patients"),
 });
 
 patientRegistry.registerPath({
@@ -83,10 +80,7 @@ patientRegistry.registerPath({
   request: {
     params: z.object({ id: z.string() }),
   },
-  responses: createApiResponse(
-    z.object({ success: z.boolean() }),
-    "Successfully deleted patient"
-  ),
+  responses: createApiResponse(z.object({ success: z.boolean() }), "Successfully deleted patient"),
 });
 
 // Add this to your registry
@@ -102,10 +96,7 @@ patientRegistry.registerPath({
       contactNumber: z.string().optional(),
     }),
   },
-  responses: createApiResponse(
-    z.array(PatientSchema),
-    "Successfully searched patients"
-  ),
+  responses: createApiResponse(z.array(PatientSchema), "Successfully searched patients"),
 });
 
 // Existing patient routes
@@ -115,18 +106,18 @@ patientRouter.get(
   validateRequest(
     z.object({
       params: z.object({ id: z.string() }),
-    })
+    }),
   ),
-  patientController.getPatient
+  patientController.getPatient,
 );
 patientRouter.post(
   "/",
   validateRequest(
     z.object({
       body: CreatePatientSchema,
-    })
+    }),
   ),
-  patientController.createPatient
+  patientController.createPatient,
 );
 patientRouter.put(
   "/:id",
@@ -134,18 +125,18 @@ patientRouter.put(
     z.object({
       params: z.object({ id: z.string() }),
       body: PatientSchema.partial(),
-    })
+    }),
   ),
-  patientController.updatePatient
+  patientController.updatePatient,
 );
 patientRouter.delete(
   "/:id",
   validateRequest(
     z.object({
       params: z.object({ id: z.string() }),
-    })
+    }),
   ),
-  patientController.deletePatient
+  patientController.deletePatient,
 );
 
 // Add this route before your other routes
@@ -159,9 +150,9 @@ patientRouter.get(
         email: z.string().optional(),
         contactNumber: z.string().optional(),
       }),
-    })
+    }),
   ),
-  patientController.searchPatients
+  patientController.searchPatients,
 );
 
 // Appointment routes
@@ -178,10 +169,7 @@ patientRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(
-    AppointmentSchema,
-    "Successfully created appointment"
-  ),
+  responses: createApiResponse(AppointmentSchema, "Successfully created appointment"),
 });
 
 patientRegistry.registerPath({
@@ -200,10 +188,7 @@ patientRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(
-    AppointmentSchema,
-    "Successfully rescheduled appointment"
-  ),
+  responses: createApiResponse(AppointmentSchema, "Successfully rescheduled appointment"),
 });
 
 patientRouter.post(
@@ -211,9 +196,9 @@ patientRouter.post(
   validateRequest(
     z.object({
       body: CreateAppointmentSchema,
-    })
+    }),
   ),
-  patientController.createAppointment
+  patientController.createAppointment,
 );
 
 patientRouter.put(
@@ -224,9 +209,9 @@ patientRouter.put(
       body: z.object({
         dateTime: z.date(),
       }),
-    })
+    }),
   ),
-  patientController.rescheduleAppointment
+  patientController.rescheduleAppointment,
 );
 
 patientRegistry.registerPath({
@@ -246,10 +231,7 @@ patientRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(
-    AppointmentSchema,
-    "Successfully updated appointment status"
-  ),
+  responses: createApiResponse(AppointmentSchema, "Successfully updated appointment status"),
 });
 
 patientRouter.put(
@@ -261,9 +243,9 @@ patientRouter.put(
         status: AppointmentSchema.shape.status,
         cancelReason: z.string().optional(),
       }),
-    })
+    }),
   ),
-  patientController.updateAppointmentStatus
+  patientController.updateAppointmentStatus,
 );
 
 patientRegistry.registerPath({
@@ -271,10 +253,7 @@ patientRegistry.registerPath({
   path: "/patients/{patientId}/appointments",
   tags: ["Patient Appointments"],
   request: { params: z.object({ patientId: z.string() }) },
-  responses: createApiResponse(
-    z.array(AppointmentSchema),
-    "Successfully retrieved patient appointments"
-  ),
+  responses: createApiResponse(z.array(AppointmentSchema), "Successfully retrieved patient appointments"),
 });
 
 patientRouter.get(
@@ -282,9 +261,9 @@ patientRouter.get(
   validateRequest(
     z.object({
       params: z.object({ patientId: z.string() }),
-    })
+    }),
   ),
-  patientController.getPatientAppointments
+  patientController.getPatientAppointments,
 );
 
 patientRegistry.registerPath({
@@ -292,10 +271,7 @@ patientRegistry.registerPath({
   path: "/patients/{patientId}/appointments/upcoming",
   tags: ["Patient Appointments"],
   request: { params: z.object({ patientId: z.string() }) },
-  responses: createApiResponse(
-    z.array(AppointmentSchema),
-    "Successfully retrieved upcoming appointments"
-  ),
+  responses: createApiResponse(z.array(AppointmentSchema), "Successfully retrieved upcoming appointments"),
 });
 
 patientRouter.get(
@@ -303,9 +279,9 @@ patientRouter.get(
   validateRequest(
     z.object({
       params: z.object({ patientId: z.string() }),
-    })
+    }),
   ),
-  patientController.getUpcomingAppointments
+  patientController.getUpcomingAppointments,
 );
 
 // Message routes
@@ -330,9 +306,9 @@ patientRouter.post(
   validateRequest(
     z.object({
       body: CreateMessageSchema,
-    })
+    }),
   ),
-  patientController.createMessage
+  patientController.createMessage,
 );
 
 patientRegistry.registerPath({
@@ -340,10 +316,7 @@ patientRegistry.registerPath({
   path: "/patients/{patientId}/messages",
   tags: ["Patient Messages"],
   request: { params: z.object({ patientId: z.string() }) },
-  responses: createApiResponse(
-    z.array(MessageSchema),
-    "Successfully retrieved patient messages"
-  ),
+  responses: createApiResponse(z.array(MessageSchema), "Successfully retrieved patient messages"),
 });
 
 patientRouter.get(
@@ -351,9 +324,9 @@ patientRouter.get(
   validateRequest(
     z.object({
       params: z.object({ patientId: z.string() }),
-    })
+    }),
   ),
-  patientController.getPatientMessages
+  patientController.getPatientMessages,
 );
 
 patientRegistry.registerPath({
@@ -361,10 +334,7 @@ patientRegistry.registerPath({
   path: "/patients/{patientId}/messages/unread",
   tags: ["Patient Messages"],
   request: { params: z.object({ patientId: z.string() }) },
-  responses: createApiResponse(
-    z.array(MessageSchema),
-    "Successfully retrieved unread messages"
-  ),
+  responses: createApiResponse(z.array(MessageSchema), "Successfully retrieved unread messages"),
 });
 
 patientRouter.get(
@@ -372,9 +342,9 @@ patientRouter.get(
   validateRequest(
     z.object({
       params: z.object({ patientId: z.string() }),
-    })
+    }),
   ),
-  patientController.getUnreadMessages
+  patientController.getUnreadMessages,
 );
 
 patientRegistry.registerPath({
@@ -382,10 +352,7 @@ patientRegistry.registerPath({
   path: "/patients/messages/{messageId}/read",
   tags: ["Patient Messages"],
   request: { params: z.object({ messageId: z.string() }) },
-  responses: createApiResponse(
-    MessageSchema,
-    "Successfully marked message as read"
-  ),
+  responses: createApiResponse(MessageSchema, "Successfully marked message as read"),
 });
 
 patientRouter.put(
@@ -393,9 +360,9 @@ patientRouter.put(
   validateRequest(
     z.object({
       params: z.object({ messageId: z.string() }),
-    })
+    }),
   ),
-  patientController.markMessageAsRead
+  patientController.markMessageAsRead,
 );
 
 const EmergencyContactSchema = z.object({
@@ -462,10 +429,7 @@ patientRegistry.registerPath({
   request: {
     params: z.object({ id: z.string() }),
   },
-  responses: createApiResponse(
-    PatientEmergencySchema,
-    "Successfully retrieved emergency information"
-  ),
+  responses: createApiResponse(PatientEmergencySchema, "Successfully retrieved emergency information"),
 });
 
 patientRegistry.registerPath({
@@ -482,10 +446,7 @@ patientRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(
-    PatientSchema,
-    "Successfully updated emergency contact"
-  ),
+  responses: createApiResponse(PatientSchema, "Successfully updated emergency contact"),
 });
 
 patientRegistry.registerPath({
@@ -501,10 +462,7 @@ patientRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(
-    EmergencyVisitSchema,
-    "Successfully recorded emergency visit"
-  ),
+  responses: createApiResponse(EmergencyVisitSchema, "Successfully recorded emergency visit"),
 });
 
 // Add the routes to the router
@@ -513,9 +471,9 @@ patientRouter.get(
   validateRequest(
     z.object({
       params: z.object({ id: z.string() }),
-    })
+    }),
   ),
-  patientController.getEmergencyInfo
+  patientController.getEmergencyInfo,
 );
 
 patientRouter.put(
@@ -524,9 +482,9 @@ patientRouter.put(
     z.object({
       params: z.object({ id: z.string() }),
       body: EmergencyContactSchema,
-    })
+    }),
   ),
-  patientController.updateEmergencyContact
+  patientController.updateEmergencyContact,
 );
 
 patientRouter.post(
@@ -534,7 +492,7 @@ patientRouter.post(
   validateRequest(
     z.object({
       body: EmergencyVisitSchema,
-    })
+    }),
   ),
-  patientController.recordEmergencyVisit
+  patientController.recordEmergencyVisit,
 );

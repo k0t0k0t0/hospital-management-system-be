@@ -67,7 +67,7 @@ export const patientSchema = new mongoose.Schema(
   },
   {
     timestamps: true, // This will add createdAt and updatedAt fields
-  }
+  },
 );
 
 // Add any indexes you need
@@ -84,14 +84,7 @@ export const appointmentSchema = new mongoose.Schema(
     type: {
       type: String,
       required: true,
-      enum: [
-        "regular_checkup",
-        "follow_up",
-        "consultation",
-        "emergency",
-        "vaccination",
-        "lab_work",
-      ],
+      enum: ["regular_checkup", "follow_up", "consultation", "emergency", "vaccination", "lab_work"],
     },
     status: {
       type: String,
@@ -108,7 +101,7 @@ export const appointmentSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Message Schema
@@ -130,7 +123,7 @@ export const messageSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Emergency Visit Schema
@@ -157,7 +150,7 @@ export const emergencyVisitSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Add indexes for better query performance
@@ -174,14 +167,8 @@ emergencyVisitSchema.index({ severity: 1 });
 emergencyVisitSchema.index({ attendingStaffId: 1 });
 
 // Export models
-export const AppointmentModel = mongoose.model(
-  "Appointment",
-  appointmentSchema
-);
+export const AppointmentModel = mongoose.model("Appointment", appointmentSchema);
 export const MessageModel = mongoose.model("Message", messageSchema);
-export const EmergencyVisitModel = mongoose.model(
-  "EmergencyVisit",
-  emergencyVisitSchema
-);
+export const EmergencyVisitModel = mongoose.model("EmergencyVisit", emergencyVisitSchema);
 
 export const PatientModel = mongoose.model("Patient", patientSchema);

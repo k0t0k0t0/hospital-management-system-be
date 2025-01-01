@@ -14,7 +14,7 @@ export class AppointmentRepository {
   }
 
   async createAsync(
-    examination: Omit<Examination, "_id" | "status" | "createdAt" | "updatedAt">
+    examination: Omit<Examination, "_id" | "status" | "createdAt" | "updatedAt">,
   ): Promise<Examination> {
     const newExamination = new Models.Examination({
       ...examination,
@@ -24,15 +24,8 @@ export class AppointmentRepository {
     return this.sanitizeExaminationData(newExamination.toObject());
   }
 
-  async updateAsync(
-    id: string,
-    examinationData: Partial<Examination>
-  ): Promise<Examination | null> {
-    const updated = await Models.Examination.findByIdAndUpdate(
-      id,
-      { $set: examinationData },
-      { new: true }
-    ).lean();
+  async updateAsync(id: string, examinationData: Partial<Examination>): Promise<Examination | null> {
+    const updated = await Models.Examination.findByIdAndUpdate(id, { $set: examinationData }, { new: true }).lean();
     return updated ? this.sanitizeExaminationData(updated) : null;
   }
 
@@ -42,11 +35,7 @@ export class AppointmentRepository {
   }
 
   // Search methods
-  async findByDoctorAndDateRangeAsync(
-    doctorId: string,
-    startDate: Date,
-    endDate: Date
-  ): Promise<Examination[]> {
+  async findByDoctorAndDateRangeAsync(doctorId: string, startDate: Date, endDate: Date): Promise<Examination[]> {
     const examinations = await Models.Examination.find({
       doctorId,
       scheduledDate: {
@@ -71,10 +60,7 @@ export class AppointmentRepository {
     return examinations.map(this.sanitizeExaminationData);
   }
 
-  async findUpcomingByDoctorAsync(
-    doctorId: string,
-    fromDate: Date = new Date()
-  ): Promise<Examination[]> {
+  async findUpcomingByDoctorAsync(doctorId: string, fromDate: Date = new Date()): Promise<Examination[]> {
     const examinations = await Models.Examination.find({
       doctorId,
       scheduledDate: { $gte: fromDate },
@@ -86,20 +72,12 @@ export class AppointmentRepository {
   }
 
   // Status update methods
-  async updateStatusAsync(
-    id: string,
-    status: string,
-    notes?: string
-  ): Promise<Examination | null> {
+  async updateStatusAsync(id: string, status: string, notes?: string): Promise<Examination | null> {
     const update: any = { status };
     if (notes) update.notes = notes;
     if (status === "completed") update.completedAt = new Date();
 
-    const updated = await Models.Examination.findByIdAndUpdate(
-      id,
-      { $set: update },
-      { new: true }
-    ).lean();
+    const updated = await Models.Examination.findByIdAndUpdate(id, { $set: update }, { new: true }).lean();
     return updated ? this.sanitizeExaminationData(updated) : null;
   }
 
@@ -137,11 +115,7 @@ export class AppointmentRepository {
   //   }));
   // }
 
-  async findBusyDoctors(
-    date: Date,
-    startTime: string,
-    endTime: string
-  ): Promise<string[]> {
+  async findBusyDoctors(date: Date, startTime: string, endTime: string): Promise<string[]> {
     // Convert date and times to Date objects for comparison
     const startDateTime = new Date(date);
     const [startHour, startMinute] = startTime.split(":").map(Number);
@@ -169,11 +143,7 @@ export class AppointmentRepository {
     return [...new Set(busyAppointments.map((apt) => apt.doctorId.toString()))];
   }
 
-  async findExaminationsByDoctorAsync(
-    doctorId: string,
-    startDate: Date,
-    endDate: Date
-  ): Promise<Examination[]> {
+  async findExaminationsByDoctorAsync(doctorId: string, startDate: Date, endDate: Date): Promise<Examination[]> {
     const examinations = await Models.Examination.find({
       doctorId,
       scheduledDate: {
@@ -197,10 +167,7 @@ export class AppointmentRepository {
   }
 
   async createExaminationAsync(
-    examinationData: Omit<
-      Examination,
-      "_id" | "status" | "createdAt" | "updatedAt"
-    >
+    examinationData: Omit<Examination, "_id" | "status" | "createdAt" | "updatedAt">,
   ): Promise<Examination> {
     const newExamination = new Models.Examination({
       ...examinationData,
@@ -210,15 +177,8 @@ export class AppointmentRepository {
     return this.sanitizeExaminationData(newExamination.toObject());
   }
 
-  async updateExaminationAsync(
-    id: string,
-    updateData: Partial<Examination>
-  ): Promise<Examination | null> {
-    const updated = await Models.Examination.findByIdAndUpdate(
-      id,
-      { $set: updateData },
-      { new: true }
-    ).lean();
+  async updateExaminationAsync(id: string, updateData: Partial<Examination>): Promise<Examination | null> {
+    const updated = await Models.Examination.findByIdAndUpdate(id, { $set: updateData }, { new: true }).lean();
     return updated ? this.sanitizeExaminationData(updated) : null;
   }
 
@@ -233,11 +193,7 @@ export class AppointmentRepository {
     };
   }
 
-  async findByDoctorAndDateRange(
-    doctorId: string,
-    startDate: Date,
-    endDate: Date
-  ): Promise<Appointment[]> {
+  async findByDoctorAndDateRange(doctorId: string, startDate: Date, endDate: Date): Promise<Appointment[]> {
     const appointments = await Models.Appointment.find({
       doctorId,
       dateTime: { $gte: startDate, $lte: endDate },

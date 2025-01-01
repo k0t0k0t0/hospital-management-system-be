@@ -1,15 +1,5 @@
-import {
-  AppointmentModel,
-  EmergencyVisitModel,
-  MessageModel,
-  PatientModel,
-} from "./patientModel";
-import type {
-  Appointment,
-  EmergencyVisit,
-  Message,
-  Patient,
-} from "./patientModel";
+import { AppointmentModel, EmergencyVisitModel, MessageModel, PatientModel } from "./patientModel";
+import type { Appointment, EmergencyVisit, Message, Patient } from "./patientModel";
 
 export class PatientRepository {
   async findAllAsync(): Promise<Patient[]> {
@@ -22,23 +12,14 @@ export class PatientRepository {
     return patient ? this.sanitizePatientData(patient) : null;
   }
 
-  async createAsync(
-    patient: Omit<Patient, "_id" | "createdAt" | "updatedAt">
-  ): Promise<Patient> {
+  async createAsync(patient: Omit<Patient, "_id" | "createdAt" | "updatedAt">): Promise<Patient> {
     const newPatient = new PatientModel(patient);
     await newPatient.save();
     return this.sanitizePatientData(newPatient.toObject());
   }
 
-  async updateAsync(
-    id: string,
-    patientData: Partial<Patient>
-  ): Promise<Patient | null> {
-    const updated = await PatientModel.findByIdAndUpdate(
-      id,
-      { $set: patientData },
-      { new: true }
-    ).lean();
+  async updateAsync(id: string, patientData: Partial<Patient>): Promise<Patient | null> {
+    const updated = await PatientModel.findByIdAndUpdate(id, { $set: patientData }, { new: true }).lean();
     return updated ? this.sanitizePatientData(updated) : null;
   }
 
@@ -52,8 +33,7 @@ export class PatientRepository {
       },
       communicationPreferences: {
         ...patient.communicationPreferences,
-        preferredContactTime:
-          patient.communicationPreferences?.preferredContactTime || undefined,
+        preferredContactTime: patient.communicationPreferences?.preferredContactTime || undefined,
       },
       bloodType: patient.bloodType || undefined,
       allergies: patient.allergies || undefined,
@@ -68,7 +48,7 @@ export class PatientRepository {
   // Appointment methods with simplified error handling
   async findAppointmentsByPatientAsync(
     patientId: string,
-    options?: { status?: string; fromDate?: Date }
+    options?: { status?: string; fromDate?: Date },
   ): Promise<Appointment[]> {
     const query: any = { patientId };
     if (options?.status) query.status = options.status;
@@ -81,7 +61,7 @@ export class PatientRepository {
   }
 
   async createAppointmentAsync(
-    appointment: Omit<Appointment, "_id" | "status" | "createdAt" | "updatedAt">
+    appointment: Omit<Appointment, "_id" | "status" | "createdAt" | "updatedAt">,
   ): Promise<Appointment> {
     const newAppointment = new AppointmentModel({
       ...appointment,
@@ -94,7 +74,7 @@ export class PatientRepository {
   async updateAppointmentStatusAsync(
     appointmentId: string,
     status: string,
-    reason?: string
+    reason?: string,
   ): Promise<Appointment | null> {
     const update: any = { status };
     if (status === "cancelled") {
@@ -102,20 +82,13 @@ export class PatientRepository {
       update.cancelReason = reason;
     }
 
-    const updated = await AppointmentModel.findByIdAndUpdate(
-      appointmentId,
-      { $set: update },
-      { new: true }
-    ).lean();
+    const updated = await AppointmentModel.findByIdAndUpdate(appointmentId, { $set: update }, { new: true }).lean();
 
     return updated ? this.sanitizeAppointmentData(updated) : null;
   }
 
   // Message methods with simplified error handling
-  async findMessagesAsync(
-    patientId: string,
-    options?: { status?: string[]; limit?: number }
-  ): Promise<Message[]> {
+  async findMessagesAsync(patientId: string, options?: { status?: string[]; limit?: number }): Promise<Message[]> {
     const query: any = { patientId };
     if (options?.status) query.status = { $in: options.status };
 
@@ -127,10 +100,7 @@ export class PatientRepository {
   }
 
   async createMessageAsync(
-    message: Omit<
-      Message,
-      "_id" | "status" | "createdAt" | "updatedAt" | "readAt"
-    >
+    message: Omit<Message, "_id" | "status" | "createdAt" | "updatedAt" | "readAt">,
   ): Promise<Message> {
     const newMessage = new MessageModel({
       ...message,
@@ -140,20 +110,13 @@ export class PatientRepository {
     return this.sanitizeMessageData(newMessage.toObject());
   }
 
-  async updateMessageStatusAsync(
-    messageId: string,
-    status: string
-  ): Promise<Message | null> {
+  async updateMessageStatusAsync(messageId: string, status: string): Promise<Message | null> {
     const update: any = { status };
     if (status === "read") {
       update.readAt = new Date();
     }
 
-    const updated = await MessageModel.findByIdAndUpdate(
-      messageId,
-      { $set: update },
-      { new: true }
-    ).lean();
+    const updated = await MessageModel.findByIdAndUpdate(messageId, { $set: update }, { new: true }).lean();
 
     return updated ? this.sanitizeMessageData(updated) : null;
   }
@@ -161,7 +124,7 @@ export class PatientRepository {
   // Emergency visit methods
   async findEmergencyVisitsAsync(
     patientId: string,
-    options?: { severity?: string; limit?: number }
+    options?: { severity?: string; limit?: number },
   ): Promise<EmergencyVisit[]> {
     const query: any = { patientId };
     if (options?.severity) query.severity = options.severity;
@@ -174,22 +137,15 @@ export class PatientRepository {
   }
 
   async createEmergencyVisitAsync(
-    visit: Omit<EmergencyVisit, "_id" | "createdAt" | "updatedAt">
+    visit: Omit<EmergencyVisit, "_id" | "createdAt" | "updatedAt">,
   ): Promise<EmergencyVisit> {
     const newVisit = new EmergencyVisitModel(visit);
     await newVisit.save();
     return this.sanitizeEmergencyVisitData(newVisit.toObject());
   }
 
-  async updateEmergencyVisitAsync(
-    visitId: string,
-    update: Partial<EmergencyVisit>
-  ): Promise<EmergencyVisit | null> {
-    const updated = await EmergencyVisitModel.findByIdAndUpdate(
-      visitId,
-      { $set: update },
-      { new: true }
-    ).lean();
+  async updateEmergencyVisitAsync(visitId: string, update: Partial<EmergencyVisit>): Promise<EmergencyVisit | null> {
+    const updated = await EmergencyVisitModel.findByIdAndUpdate(visitId, { $set: update }, { new: true }).lean();
 
     return updated ? this.sanitizeEmergencyVisitData(updated) : null;
   }
@@ -228,10 +184,13 @@ export class PatientRepository {
   }): Promise<Patient[]> {
     const query = Object.entries(searchParams)
       .filter(([_, value]) => value)
-      .reduce((acc, [key, value]) => {
-        acc[key] = new RegExp(value!, "i");
-        return acc;
-      }, {} as Record<string, RegExp>);
+      .reduce(
+        (acc, [key, value]) => {
+          acc[key] = new RegExp(value!, "i");
+          return acc;
+        },
+        {} as Record<string, RegExp>,
+      );
 
     const patients = await PatientModel.find(query).lean();
     return patients.map(this.sanitizePatientData);
@@ -247,21 +206,12 @@ export class PatientRepository {
     return appointment ? this.sanitizeAppointmentData(appointment) : null;
   }
 
-  async updateAppointmentAsync(
-    id: string,
-    appointmentData: Partial<Appointment>
-  ): Promise<Appointment | null> {
-    const updated = await AppointmentModel.findByIdAndUpdate(
-      id,
-      { $set: appointmentData },
-      { new: true }
-    ).lean();
+  async updateAppointmentAsync(id: string, appointmentData: Partial<Appointment>): Promise<Appointment | null> {
+    const updated = await AppointmentModel.findByIdAndUpdate(id, { $set: appointmentData }, { new: true }).lean();
     return updated ? this.sanitizeAppointmentData(updated) : null;
   }
 
-  async findUpcomingAppointmentsAsync(
-    patientId: string
-  ): Promise<Appointment[]> {
+  async findUpcomingAppointmentsAsync(patientId: string): Promise<Appointment[]> {
     return this.findAppointmentsByPatientAsync(patientId, {
       status: "scheduled",
       fromDate: new Date(),
@@ -282,9 +232,7 @@ export class PatientRepository {
     return this.updateMessageStatusAsync(messageId, "read");
   }
 
-  async getLastEmergencyVisit(
-    patientId: string
-  ): Promise<EmergencyVisit | null> {
+  async getLastEmergencyVisit(patientId: string): Promise<EmergencyVisit | null> {
     const visits = await this.findEmergencyVisitsAsync(patientId, { limit: 1 });
     return visits.length > 0 ? visits[0] : null;
   }

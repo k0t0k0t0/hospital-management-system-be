@@ -12,7 +12,10 @@ export const commonValidations = {
 
   // Number validations
   positiveNumber: z.number().positive().finite(),
-  price: z.number().min(0).transform(num => Number(num.toFixed(2))),
+  price: z
+    .number()
+    .min(0)
+    .transform((num) => Number(num.toFixed(2))),
 
   // Boolean validation
   boolean: z.boolean(),
@@ -38,5 +41,5 @@ export const commonValidations = {
     string: z.string().nullable().optional(),
     array: z.array(z.string()).nullable().optional(),
     date: z.coerce.date().nullable().optional(),
-  }
+  },
 };

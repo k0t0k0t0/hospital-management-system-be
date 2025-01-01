@@ -1,10 +1,5 @@
 import { Schema, model } from "mongoose";
-import type {
-  Bed,
-  PatientAssignment,
-  Ward,
-  WardResource,
-} from "./wardModel";
+import type { Bed, PatientAssignment, Ward, WardResource } from "./wardModel";
 
 const WardSchema = new Schema<Ward>(
   {
@@ -21,7 +16,7 @@ const WardSchema = new Schema<Ward>(
     },
     notes: String,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const BedSchema = new Schema<Bed>({
@@ -75,8 +70,5 @@ export const Models = {
   Ward: model<Ward>("Ward", WardSchema),
   Bed: model<Bed>("Bed", BedSchema),
   WardResource: model<WardResource>("WardResource", WardResourceSchema),
-  PatientAssignment: model<PatientAssignment>(
-    "PatientAssignment",
-    PatientAssignmentSchema
-  ),
+  PatientAssignment: model<PatientAssignment>("PatientAssignment", PatientAssignmentSchema),
 };

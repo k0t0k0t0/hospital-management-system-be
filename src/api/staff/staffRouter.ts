@@ -43,10 +43,7 @@ staffRegistry.registerPath({
   method: "get",
   path: "/staff",
   tags: ["Medical Staff"],
-  responses: createApiResponse(
-    z.array(MedicalStaffSchema),
-    "Successfully retrieved all staff members"
-  ),
+  responses: createApiResponse(z.array(MedicalStaffSchema), "Successfully retrieved all staff members"),
 });
 
 staffRouter.get("/", staffController.getAllStaff);
@@ -56,10 +53,7 @@ staffRegistry.registerPath({
   method: "get",
   path: "/staff/doctors",
   tags: ["Medical Staff"],
-  responses: createApiResponse(
-    z.array(DoctorSchema),
-    "Successfully retrieved all doctors"
-  ),
+  responses: createApiResponse(z.array(DoctorSchema), "Successfully retrieved all doctors"),
 });
 
 staffRouter.get("/doctors", staffController.getDoctors);
@@ -69,10 +63,7 @@ staffRegistry.registerPath({
   method: "get",
   path: "/staff/nurses",
   tags: ["Medical Staff"],
-  responses: createApiResponse(
-    z.array(NurseSchema),
-    "Successfully retrieved all nurses"
-  ),
+  responses: createApiResponse(z.array(NurseSchema), "Successfully retrieved all nurses"),
 });
 
 staffRouter.get("/nurses", staffController.getNurses);
@@ -83,17 +74,10 @@ staffRegistry.registerPath({
   path: "/staff/{id}",
   tags: ["Medical Staff"],
   request: { params: GetStaffSchema.shape.params },
-  responses: createApiResponse(
-    MedicalStaffSchema,
-    "Successfully retrieved staff member"
-  ),
+  responses: createApiResponse(MedicalStaffSchema, "Successfully retrieved staff member"),
 });
 
-staffRouter.get(
-  "/:id",
-  validateRequest(GetStaffSchema),
-  staffController.getStaffMember
-);
+staffRouter.get("/:id", validateRequest(GetStaffSchema), staffController.getStaffMember);
 
 // POST /staff
 staffRegistry.registerPath({
@@ -115,10 +99,7 @@ staffRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(
-    MedicalStaffSchema,
-    "Successfully created staff member"
-  ),
+  responses: createApiResponse(MedicalStaffSchema, "Successfully created staff member"),
 });
 
 staffRouter.post(
@@ -132,9 +113,9 @@ staffRouter.post(
         CreateEmergencyTeamMemberSchema,
         CreateLabTechnicianSchema,
       ]),
-    })
+    }),
   ),
-  staffController.createStaffMember
+  staffController.createStaffMember,
 );
 
 // PUT /staff/:id
@@ -171,10 +152,7 @@ staffRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(
-    MedicalStaffSchema,
-    "Successfully updated staff member"
-  ),
+  responses: createApiResponse(MedicalStaffSchema, "Successfully updated staff member"),
 });
 
 staffRouter.put(
@@ -202,9 +180,9 @@ staffRouter.put(
           department: true,
         }),
       ]),
-    })
+    }),
   ),
-  staffController.updateStaffMember
+  staffController.updateStaffMember,
 );
 
 // DELETE /staff/:id
@@ -216,11 +194,7 @@ staffRegistry.registerPath({
   responses: createApiResponse(z.null(), "Successfully deleted staff member"),
 });
 
-staffRouter.delete(
-  "/:id",
-  validateRequest(GetStaffSchema),
-  staffController.deleteStaffMember
-);
+staffRouter.delete("/:id", validateRequest(GetStaffSchema), staffController.deleteStaffMember);
 
 // GET /staff/doctors/:id/availability
 staffRegistry.registerPath({
@@ -228,17 +202,10 @@ staffRegistry.registerPath({
   path: "/staff/doctors/{id}/availability",
   tags: ["Medical Staff"],
   request: { params: GetStaffSchema.shape.params },
-  responses: createApiResponse(
-    z.array(DoctorSchema.shape.availability),
-    "Successfully retrieved doctor availability"
-  ),
+  responses: createApiResponse(z.array(DoctorSchema.shape.availability), "Successfully retrieved doctor availability"),
 });
 
-staffRouter.get(
-  "/doctors/:id/availability",
-  validateRequest(GetStaffSchema),
-  staffController.getDoctorAvailability
-);
+staffRouter.get("/doctors/:id/availability", validateRequest(GetStaffSchema), staffController.getDoctorAvailability);
 
 // PUT /staff/doctors/:id/availability
 staffRegistry.registerPath({
@@ -255,10 +222,7 @@ staffRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(
-    DoctorSchema,
-    "Successfully updated doctor availability"
-  ),
+  responses: createApiResponse(DoctorSchema, "Successfully updated doctor availability"),
 });
 
 staffRouter.put(
@@ -267,9 +231,9 @@ staffRouter.put(
     z.object({
       params: z.object({ id: z.string() }),
       body: z.object({ availability: DoctorSchema.shape.availability }),
-    })
+    }),
   ),
-  staffController.updateDoctorAvailability
+  staffController.updateDoctorAvailability,
 );
 
 // PUT /staff/nurses/:id/shift
@@ -296,9 +260,9 @@ staffRouter.put(
     z.object({
       params: z.object({ id: z.string() }),
       body: z.object({ shift: NurseSchema.shape.shift }),
-    })
+    }),
   ),
-  staffController.updateNurseShift
+  staffController.updateNurseShift,
 );
 
 // GET /staff/admin
@@ -306,10 +270,7 @@ staffRegistry.registerPath({
   method: "get",
   path: "/staff/admin",
   tags: ["Administrative Staff"],
-  responses: createApiResponse(
-    z.array(AdminStaffSchema),
-    "Successfully retrieved all administrative staff"
-  ),
+  responses: createApiResponse(z.array(AdminStaffSchema), "Successfully retrieved all administrative staff"),
 });
 
 staffRouter.get("/admin", staffController.getAdminStaff);
@@ -324,10 +285,7 @@ staffRegistry.registerPath({
       department: z.string(),
     }),
   },
-  responses: createApiResponse(
-    z.array(MedicalStaffSchema),
-    "Successfully retrieved staff by department"
-  ),
+  responses: createApiResponse(z.array(MedicalStaffSchema), "Successfully retrieved staff by department"),
 });
 
 staffRouter.get(
@@ -337,9 +295,9 @@ staffRouter.get(
       params: z.object({
         department: z.string(),
       }),
-    })
+    }),
   ),
-  staffController.getStaffByDepartment
+  staffController.getStaffByDepartment,
 );
 
 // PUT /staff/admin/:id/access
@@ -359,10 +317,7 @@ staffRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(
-    AdminStaffSchema,
-    "Successfully updated admin access level"
-  ),
+  responses: createApiResponse(AdminStaffSchema, "Successfully updated admin access level"),
 });
 
 staffRouter.put(
@@ -373,9 +328,9 @@ staffRouter.put(
       body: z.object({
         accessLevel: AdminStaffSchema.shape.accessLevel,
       }),
-    })
+    }),
   ),
-  staffController.updateAdminAccess
+  staffController.updateAdminAccess,
 );
 
 // PUT /staff/admin/:id/departments
@@ -395,10 +350,7 @@ staffRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(
-    AdminStaffSchema,
-    "Successfully updated managed departments"
-  ),
+  responses: createApiResponse(AdminStaffSchema, "Successfully updated managed departments"),
 });
 
 // PUT /staff/admin/:id/responsibilities
@@ -418,10 +370,7 @@ staffRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(
-    AdminStaffSchema,
-    "Successfully updated responsibilities"
-  ),
+  responses: createApiResponse(AdminStaffSchema, "Successfully updated responsibilities"),
 });
 
 // POST /staff/admin (create admin staff)
@@ -438,10 +387,7 @@ staffRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(
-    AdminStaffSchema,
-    "Successfully created administrative staff member"
-  ),
+  responses: createApiResponse(AdminStaffSchema, "Successfully created administrative staff member"),
 });
 
 staffRouter.post(
@@ -449,9 +395,9 @@ staffRouter.post(
   validateRequest(
     z.object({
       body: CreateAdminStaffSchema,
-    })
+    }),
   ),
-  staffController.createStaffMember
+  staffController.createStaffMember,
 );
 
 // GET /staff/emergency-team
@@ -459,10 +405,7 @@ staffRegistry.registerPath({
   method: "get",
   path: "/staff/emergency-team",
   tags: ["Emergency Response"],
-  responses: createApiResponse(
-    z.array(EmergencyTeamMemberSchema),
-    "Successfully retrieved emergency team"
-  ),
+  responses: createApiResponse(z.array(EmergencyTeamMemberSchema), "Successfully retrieved emergency team"),
 });
 
 staffRouter.get("/emergency-team", staffController.getEmergencyTeam);
@@ -474,14 +417,11 @@ staffRegistry.registerPath({
   tags: ["Emergency Response"],
   responses: createApiResponse(
     z.array(EmergencyTeamMemberSchema),
-    "Successfully retrieved available emergency team members"
+    "Successfully retrieved available emergency team members",
   ),
 });
 
-staffRouter.get(
-  "/emergency-team/available",
-  staffController.getAvailableEmergencyTeam
-);
+staffRouter.get("/emergency-team/available", staffController.getAvailableEmergencyTeam);
 
 // POST /staff/emergency-cases
 staffRegistry.registerPath({
@@ -497,10 +437,7 @@ staffRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(
-    EmergencyCaseSchema,
-    "Successfully created emergency case"
-  ),
+  responses: createApiResponse(EmergencyCaseSchema, "Successfully created emergency case"),
 });
 
 staffRouter.post(
@@ -508,9 +445,9 @@ staffRouter.post(
   validateRequest(
     z.object({
       body: CreateEmergencyCaseSchema,
-    })
+    }),
   ),
-  staffController.createEmergencyCase
+  staffController.createEmergencyCase,
 );
 
 // PUT /staff/emergency-cases/:id/status
@@ -530,10 +467,7 @@ staffRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(
-    EmergencyCaseSchema,
-    "Successfully updated emergency case status"
-  ),
+  responses: createApiResponse(EmergencyCaseSchema, "Successfully updated emergency case status"),
 });
 
 staffRouter.put(
@@ -544,9 +478,9 @@ staffRouter.put(
       body: z.object({
         status: EmergencyCaseSchema.shape.status,
       }),
-    })
+    }),
   ),
-  staffController.updateEmergencyCaseStatus
+  staffController.updateEmergencyCaseStatus,
 );
 
 // PUT /staff/emergency-cases/:id/team
@@ -566,10 +500,7 @@ staffRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(
-    EmergencyCaseSchema,
-    "Successfully reassigned emergency team"
-  ),
+  responses: createApiResponse(EmergencyCaseSchema, "Successfully reassigned emergency team"),
 });
 
 staffRouter.put(
@@ -580,9 +511,9 @@ staffRouter.put(
       body: z.object({
         teamMemberIds: z.array(z.number()),
       }),
-    })
+    }),
   ),
-  staffController.reassignEmergencyTeam
+  staffController.reassignEmergencyTeam,
 );
 
 // GET /staff/emergency-cases/active
@@ -590,16 +521,10 @@ staffRegistry.registerPath({
   method: "get",
   path: "/staff/emergency-cases/active",
   tags: ["Emergency Response"],
-  responses: createApiResponse(
-    z.array(EmergencyCaseSchema),
-    "Successfully retrieved active emergency cases"
-  ),
+  responses: createApiResponse(z.array(EmergencyCaseSchema), "Successfully retrieved active emergency cases"),
 });
 
-staffRouter.get(
-  "/emergency-cases/active",
-  staffController.getActiveEmergencyCases
-);
+staffRouter.get("/emergency-cases/active", staffController.getActiveEmergencyCases);
 
 // PUT /staff/emergency-team/:id/status
 staffRegistry.registerPath({
@@ -618,10 +543,7 @@ staffRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(
-    EmergencyTeamMemberSchema,
-    "Successfully updated emergency team member status"
-  ),
+  responses: createApiResponse(EmergencyTeamMemberSchema, "Successfully updated emergency team member status"),
 });
 
 staffRouter.put(
@@ -632,9 +554,9 @@ staffRouter.put(
       body: z.object({
         activeShift: z.boolean(),
       }),
-    })
+    }),
   ),
-  staffController.updateEmergencyTeamMemberStatus
+  staffController.updateEmergencyTeamMemberStatus,
 );
 
 // GET /staff/lab-technicians
@@ -642,10 +564,7 @@ staffRegistry.registerPath({
   method: "get",
   path: "/staff/lab-technicians",
   tags: ["Laboratory"],
-  responses: createApiResponse(
-    z.array(LabTechnicianSchema),
-    "Successfully retrieved lab technicians"
-  ),
+  responses: createApiResponse(z.array(LabTechnicianSchema), "Successfully retrieved lab technicians"),
 });
 
 staffRouter.get("/lab-technicians", staffController.getLabTechnicians);
@@ -660,10 +579,7 @@ staffRegistry.registerPath({
       testType: LabTestTypeEnum,
     }),
   },
-  responses: createApiResponse(
-    z.array(LabTechnicianSchema),
-    "Successfully retrieved available lab technicians"
-  ),
+  responses: createApiResponse(z.array(LabTechnicianSchema), "Successfully retrieved available lab technicians"),
 });
 
 staffRouter.get(
@@ -673,9 +589,9 @@ staffRouter.get(
       params: z.object({
         testType: LabTestTypeEnum,
       }),
-    })
+    }),
   ),
-  staffController.getAvailableLabTechnicians
+  staffController.getAvailableLabTechnicians,
 );
 
 // POST /staff/lab-tests
@@ -700,9 +616,9 @@ staffRouter.post(
   validateRequest(
     z.object({
       body: CreateLabTestSchema,
-    })
+    }),
   ),
-  staffController.createLabTest
+  staffController.createLabTest,
 );
 
 // PUT /staff/lab-tests/:id/status
@@ -723,10 +639,7 @@ staffRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(
-    LabTestSchema,
-    "Successfully updated lab test status"
-  ),
+  responses: createApiResponse(LabTestSchema, "Successfully updated lab test status"),
 });
 
 staffRouter.put(
@@ -738,9 +651,9 @@ staffRouter.put(
         status: LabTestStatusEnum,
         results: LabTestSchema.shape.results.optional(),
       }),
-    })
+    }),
   ),
-  staffController.updateLabTestStatus
+  staffController.updateLabTestStatus,
 );
 
 // PUT /staff/lab-tests/:id/technician
@@ -760,10 +673,7 @@ staffRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(
-    LabTestSchema,
-    "Successfully reassigned lab technician"
-  ),
+  responses: createApiResponse(LabTestSchema, "Successfully reassigned lab technician"),
 });
 
 staffRouter.put(
@@ -774,9 +684,9 @@ staffRouter.put(
       body: z.object({
         technicianId: z.number(),
       }),
-    })
+    }),
   ),
-  staffController.reassignLabTechnician
+  staffController.reassignLabTechnician,
 );
 
 // GET /staff/lab-tests/patient/:patientId
@@ -789,10 +699,7 @@ staffRegistry.registerPath({
       patientId: z.string(),
     }),
   },
-  responses: createApiResponse(
-    z.array(LabTestSchema),
-    "Successfully retrieved patient lab tests"
-  ),
+  responses: createApiResponse(z.array(LabTestSchema), "Successfully retrieved patient lab tests"),
 });
 
 staffRouter.get(
@@ -802,9 +709,9 @@ staffRouter.get(
       params: z.object({
         patientId: z.string(),
       }),
-    })
+    }),
   ),
-  staffController.getPatientLabTests
+  staffController.getPatientLabTests,
 );
 
 // GET /staff/lab-tests/pending
@@ -812,10 +719,7 @@ staffRegistry.registerPath({
   method: "get",
   path: "/staff/lab-tests/pending",
   tags: ["Laboratory"],
-  responses: createApiResponse(
-    z.array(LabTestSchema),
-    "Successfully retrieved pending lab tests"
-  ),
+  responses: createApiResponse(z.array(LabTestSchema), "Successfully retrieved pending lab tests"),
 });
 
 staffRouter.get("/lab-tests/pending", staffController.getPendingLabTests);
@@ -837,10 +741,7 @@ staffRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(
-    LabTechnicianSchema,
-    "Successfully updated lab technician status"
-  ),
+  responses: createApiResponse(LabTechnicianSchema, "Successfully updated lab technician status"),
 });
 
 staffRouter.put(
@@ -851,9 +752,9 @@ staffRouter.put(
       body: z.object({
         activeShift: z.boolean(),
       }),
-    })
+    }),
   ),
-  staffController.updateLabTechnicianStatus
+  staffController.updateLabTechnicianStatus,
 );
 
 // GET /staff/doctors/:id/schedule
@@ -868,10 +769,7 @@ staffRegistry.registerPath({
       endDate: z.string(),
     }),
   },
-  responses: createApiResponse(
-    z.array(DoctorScheduleSchema),
-    "Successfully retrieved doctor schedule"
-  ),
+  responses: createApiResponse(z.array(DoctorScheduleSchema), "Successfully retrieved doctor schedule"),
 });
 
 // GET /staff/doctors/available
@@ -888,10 +786,7 @@ staffRegistry.registerPath({
       specialization: z.string().optional(),
     }),
   },
-  responses: createApiResponse(
-    z.array(DoctorSchema),
-    "Successfully retrieved available doctors"
-  ),
+  responses: createApiResponse(z.array(DoctorSchema), "Successfully retrieved available doctors"),
 });
 
 staffRouter.get(
@@ -903,9 +798,9 @@ staffRouter.get(
         startDate: z.string(),
         endDate: z.string(),
       }),
-    })
+    }),
   ),
-  staffController.getDoctorSchedule
+  staffController.getDoctorSchedule,
 );
 
 staffRouter.get(
@@ -919,9 +814,9 @@ staffRouter.get(
         department: z.string().optional(),
         specialization: z.string().optional(),
       }),
-    })
+    }),
   ),
-  staffController.getAvailableDoctors
+  staffController.getAvailableDoctors,
 );
 
 // Register examination routes
@@ -938,10 +833,7 @@ staffRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(
-    ExaminationSchema,
-    "Successfully scheduled examination"
-  ),
+  responses: createApiResponse(ExaminationSchema, "Successfully scheduled examination"),
 });
 
 staffRouter.post(
@@ -949,9 +841,9 @@ staffRouter.post(
   validateRequest(
     z.object({
       body: CreateExaminationSchema,
-    })
+    }),
   ),
-  staffController.createExamination
+  staffController.createExamination,
 );
 
 staffRegistry.registerPath({
@@ -972,10 +864,7 @@ staffRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(
-    ExaminationSchema,
-    "Successfully updated examination status"
-  ),
+  responses: createApiResponse(ExaminationSchema, "Successfully updated examination status"),
 });
 
 staffRouter.put(
@@ -988,9 +877,9 @@ staffRouter.put(
         results: ExaminationSchema.shape.results.optional(),
         cancelReason: z.string().optional(),
       }),
-    })
+    }),
   ),
-  staffController.updateExaminationStatus
+  staffController.updateExaminationStatus,
 );
 
 staffRouter.get(
@@ -1002,12 +891,9 @@ staffRouter.get(
         startDate: z.string(),
         endDate: z.string(),
       }),
-    })
+    }),
   ),
-  staffController.getDoctorExaminations
+  staffController.getDoctorExaminations,
 );
 
-staffRouter.get(
-  "/examinations/pending",
-  staffController.getPendingExaminations
-);
+staffRouter.get("/examinations/pending", staffController.getPendingExaminations);
