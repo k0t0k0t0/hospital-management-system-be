@@ -21,7 +21,7 @@ export const commonValidations = {
   boolean: z.boolean(),
 
   // Array validation
-  nonEmptyArray: z.array(z.unknown()).min(1),
+  nonEmptyArray: z.array(z.unknown()).min(1).optional(),
   optionalArray: z.array(z.string()).nullable().optional(),
 
   // Pagination

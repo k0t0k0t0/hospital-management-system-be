@@ -5,10 +5,10 @@ import { appointmentSchema, emergencyVisitSchema, messageSchema, patientSchema }
 
 // Base schemas
 export const EmergencyContactSchema = z.object({
-  name: commonValidations.name,
+  name: z.string().min(2),
   relationship: z.string(),
-  primaryPhone: commonValidations.phone,
-  secondaryPhone: commonValidations.phone.optional(),
+  primaryPhone: z.string(),
+  secondaryPhone: z.string().optional(),
 });
 
 export const VitalSignsSchema = z.object({
@@ -22,7 +22,7 @@ export const InsuranceInfoSchema = z.object({
   provider: z.string(),
   policyNumber: z.string(),
   groupNumber: z.string().optional(),
-  expirationDate: commonValidations.optionalDate,
+  expirationDate: z.date().optional(),
 });
 
 // Enums
@@ -43,19 +43,19 @@ export const EmergencySeverityEnum = z.enum(["CRITICAL", "SEVERE", "MODERATE", "
 
 // Complex schemas
 export const PatientSchema = z.object({
-  firstName: commonValidations.name,
-  lastName: commonValidations.name,
-  dateOfBirth: commonValidations.date,
+  firstName: z.string().min(2),
+  lastName: z.string().min(2),
+  dateOfBirth: z.string(),
   gender: z.enum(["male", "female", "other"]),
-  contactNumber: commonValidations.phone,
-  email: commonValidations.email,
+  contactNumber: z.string(),
+  email: z.string().email(),
   address: z.string(),
-  medicalHistory: commonValidations.nonEmptyArray,
+  medicalHistory: z.array(z.string()).min(1),
   preferredLanguage: z.string().default("english"),
   emergencyContact: EmergencyContactSchema,
   communicationPreferences: z.object({
-    emailNotifications: commonValidations.boolean,
-    smsNotifications: commonValidations.boolean,
+    emailNotifications: z.boolean(),
+    smsNotifications: z.boolean(),
     preferredContactTime: z.string().nullable().optional(),
   }),
   bloodType: z.string().nullable().optional(),
@@ -64,8 +64,9 @@ export const PatientSchema = z.object({
   currentMedications: z.array(z.string()).nullable().optional(),
   recentProcedures: z.array(z.string()).nullable().optional(),
   insuranceInfo: InsuranceInfoSchema.nullable().optional(),
-  lastEmergencyVisit: commonValidations.optionalDate,
-  ...commonValidations.timestamps,
+  lastEmergencyVisit: z.date().optional(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
 });
 
 export const AppointmentSchema = z.object({
@@ -73,13 +74,14 @@ export const AppointmentSchema = z.object({
   doctorId: z.string().regex(/^[0-9a-fA-F]{24}$/),
   type: AppointmentTypeEnum,
   status: AppointmentStatusEnum,
-  dateTime: commonValidations.date,
-  duration: commonValidations.positiveNumber,
+  dateTime: z.date(),
+  duration: z.number().positive(),
   reason: z.string(),
   notes: z.string().optional(),
-  cancelledAt: commonValidations.optionalDate,
+  cancelledAt: z.date().optional(),
   cancelReason: z.string().optional(),
-  ...commonValidations.timestamps,
+  createdAt: z.date(),
+  updatedAt: z.date(),
 });
 
 export const MessageSchema = z.object({
@@ -89,8 +91,9 @@ export const MessageSchema = z.object({
   content: z.string(),
   status: MessageStatusEnum,
   attachments: z.array(z.string()).optional(),
-  readAt: commonValidations.optionalDate,
-  ...commonValidations.timestamps,
+  readAt: z.date().optional(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
 });
 
 export const EmergencyVisitSchema = z.object({
