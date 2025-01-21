@@ -24,6 +24,7 @@ import {
   MedicalStaffSchema,
   NurseSchema,
 } from "@/api/staff/staffModel";
+import { checkRole, verifyToken } from "@/common/middleware/authMiddleware";
 import { validateRequest } from "@/common/utils/httpHandlers";
 import { ExaminationSchema, ExaminationStatusEnum } from "./examModel";
 import { CreateExaminationSchema } from "./examModel";
@@ -392,6 +393,8 @@ staffRegistry.registerPath({
 
 staffRouter.post(
   "/admin",
+  verifyToken,
+  checkRole(["admin"]),
   validateRequest(
     z.object({
       body: CreateAdminStaffSchema,
@@ -791,6 +794,8 @@ staffRegistry.registerPath({
 
 staffRouter.get(
   "/doctors/:id/schedule",
+  verifyToken,
+  checkRole(["doctor", "admin"]),
   validateRequest(
     z.object({
       params: z.object({ id: z.string() }),

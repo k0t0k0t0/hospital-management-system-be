@@ -1,12 +1,23 @@
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
 
+import { authRegistry } from "@/api/auth/authRouter";
 import { healthCheckRegistry } from "@/api/healthCheck/healthCheckRouter";
 import { patientRegistry } from "@/api/patient/patientRouter";
 import { staffRegistry } from "@/api/staff/staffRouter";
 import { wardRegistry } from "@/api/ward/wardRouter";
+import { registerSecuritySchemes } from "./openAPISecuritySchemes";
 
 export function generateOpenAPIDocument() {
-  const registry = new OpenAPIRegistry([healthCheckRegistry, patientRegistry, staffRegistry, wardRegistry]);
+  const registry = new OpenAPIRegistry([
+    authRegistry,
+    healthCheckRegistry,
+    patientRegistry,
+    staffRegistry,
+    wardRegistry,
+  ]);
+
+  registerSecuritySchemes(registry);
+
   const generator = new OpenApiGeneratorV3(registry.definitions);
 
   return generator.generateDocument({
@@ -20,5 +31,6 @@ export function generateOpenAPIDocument() {
       description: "View the raw OpenAPI Specification in JSON format",
       url: "/swagger.json",
     },
+    security: [{ bearerAuth: [] }],
   });
 }

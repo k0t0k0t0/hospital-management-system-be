@@ -1,3 +1,4 @@
+import { authService } from "@/api/auth/authService";
 import type {
   AdminStaff,
   Doctor,
@@ -58,8 +59,16 @@ export class StaffService {
 
   async create(staffData: Omit<MedicalStaff, "createdAt" | "updatedAt">) {
     try {
-      const staff = await staffRepository.createAsync(staffData);
-      return ServiceResponse.success("Staff member created successfully", staff, StatusCodes.CREATED);
+      // Hash the password before saving
+      const hashedPassword = await authService.hashPassword(staffData.password);
+      const staff = await staffRepository.createAsync({
+        ...staffData,
+        password: hashedPassword,
+      });
+
+      // Remove password from response
+      const { password, ...staffWithoutPassword } = staff;
+      return ServiceResponse.success("Staff member created successfully", staffWithoutPassword, StatusCodes.CREATED);
     } catch (error) {
       return ServiceResponse.failure("Failed to create staff member", null, StatusCodes.INTERNAL_SERVER_ERROR);
     }

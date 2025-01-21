@@ -7,6 +7,7 @@ interface StaffBaseDocument extends Document {
   firstName: string;
   lastName: string;
   email: string;
+  password: string;
   contactNumber: string;
   dateOfBirth: string;
   gender: "male" | "female" | "other";
@@ -35,6 +36,7 @@ const staffBaseSchema = {
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
   contactNumber: { type: String, required: true },
   dateOfBirth: { type: String, required: true },
   gender: { type: String, enum: ["male", "female", "other"], required: true },

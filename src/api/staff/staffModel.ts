@@ -6,6 +6,7 @@ export const StaffBaseSchema = z.object({
   firstName: z.string().min(2),
   lastName: z.string().min(2),
   email: z.string().email(),
+  password: z.string().min(6),
   contactNumber: z.string(),
   dateOfBirth: z.string(),
   gender: z.enum(["male", "female", "other"]),

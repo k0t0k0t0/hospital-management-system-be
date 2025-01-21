@@ -11,6 +11,7 @@ import rateLimiter from "@/common/middleware/rateLimiter";
 import requestLogger from "@/common/middleware/requestLogger";
 import { env } from "@/common/utils/envConfig";
 import { connectToDatabase } from "@/config/database";
+import { authRouter } from "./api/auth/authRouter";
 import { patientRouter } from "./api/patient/patientRouter";
 import { staffRouter } from "./api/staff/staffRouter";
 import { wardRouter } from "./api/ward/wardRouter";
@@ -45,7 +46,7 @@ app.use("/health-check", healthCheckRouter);
 app.use("/staff", staffRouter);
 app.use("/patients", patientRouter);
 app.use("/ward", wardRouter);
-
+app.use("/auth", authRouter);
 // Swagger UI
 app.use(openAPIRouter);
 
