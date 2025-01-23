@@ -3,6 +3,7 @@ import cors from "cors";
 import express, { type Express } from "express";
 import helmet from "helmet";
 import { pino } from "pino";
+import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 
 import { openAPIRouter } from "@/api-docs/openAPIRouter";
 import { healthCheckRouter } from "@/api/healthCheck/healthCheckRouter";
@@ -15,6 +16,8 @@ import { authRouter } from "./api/auth/authRouter";
 import { patientRouter } from "./api/patient/patientRouter";
 import { staffRouter } from "./api/staff/staffRouter";
 import { wardRouter } from "./api/ward/wardRouter";
+import { statsRouter, statsRegistry } from "@/api/stats/statsRouter";
+
 const logger = pino({ name: "server start" });
 const app: Express = express();
 
@@ -33,10 +36,10 @@ app.use(
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  }),
+  })
 );
 app.use(helmet());
-app.use(rateLimiter);
+// app.use(rateLimiter);
 
 // Request logging
 app.use(requestLogger);
@@ -47,6 +50,7 @@ app.use("/staff", staffRouter);
 app.use("/patients", patientRouter);
 app.use("/ward", wardRouter);
 app.use("/auth", authRouter);
+app.use("/stats", statsRouter);
 // Swagger UI
 app.use(openAPIRouter);
 

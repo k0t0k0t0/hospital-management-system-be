@@ -1,6 +1,14 @@
 import type { Model } from "mongoose";
-import type { Doctor, EmergencyTeamMember, LabTechnician, LabTest, MedicalStaff, Nurse } from "./staffModel";
+import type {
+  Doctor,
+  EmergencyTeamMember,
+  LabTechnician,
+  LabTest,
+  MedicalStaff,
+  Nurse,
+} from "./staffModel";
 import { Models } from "./staffSchema";
+import { logError } from "@/common/utils/errorLogger";
 
 export class StaffRepository {
   private ModelMap: Record<MedicalStaff["role"], Model<any>> = {
@@ -19,7 +27,9 @@ export class StaffRepository {
       Models.EmergencyTeamMember.find().lean(),
       Models.LabTechnician.find().lean(),
     ]);
-    return [...doctors, ...nurses, ...admins, ...emergency, ...labTechs].map(this.sanitizeStaffData);
+    return [...doctors, ...nurses, ...admins, ...emergency, ...labTechs].map(
+      this.sanitizeStaffData
+    );
   }
 
   async findByIdAsync(id: string): Promise<MedicalStaff | null> {
@@ -32,12 +42,15 @@ export class StaffRepository {
         Models.LabTechnician.findById(id).lean(),
       ]);
       return staff ? this.sanitizeStaffData(staff) : null;
-    } catch {
+    } catch (error) {
+      logError("StaffRepository.findByIdAsync", error);
       return null;
     }
   }
 
-  async createAsync(staff: Omit<MedicalStaff, "createdAt" | "updatedAt">): Promise<MedicalStaff> {
+  async createAsync(
+    staff: Omit<MedicalStaff, "createdAt" | "updatedAt">
+  ): Promise<MedicalStaff> {
     const Model = this.ModelMap[staff.role];
     if (!Model) throw new Error("Invalid staff role");
 
@@ -46,7 +59,10 @@ export class StaffRepository {
     return this.sanitizeStaffData(newStaff.toObject());
   }
 
-  async updateAsync(id: string, staffData: Partial<MedicalStaff>): Promise<MedicalStaff | null> {
+  async updateAsync(
+    id: string,
+    staffData: Partial<MedicalStaff>
+  ): Promise<MedicalStaff | null> {
     const currentStaff = await this.findByIdAsync(id);
     if (!currentStaff) return null;
 
@@ -91,7 +107,9 @@ export class StaffRepository {
     return tests.map(this.sanitizeLabTestData);
   }
 
-  async createLabTestAsync(testData: Omit<LabTest, "_id" | "createdAt" | "updatedAt">): Promise<LabTest> {
+  async createLabTestAsync(
+    testData: Omit<LabTest, "_id" | "createdAt" | "updatedAt">
+  ): Promise<LabTest> {
     const newTest = new Models.LabTest(testData);
     await newTest.save();
     return this.sanitizeLabTestData(newTest.toObject());
@@ -196,11 +214,18 @@ export class StaffRepository {
   }
 
   async findAdminStaffAsync() {
-    const adminStaff = await Models.AdminStaff.find().lean();
-    return adminStaff;
+    try {
+      const adminStaff = await Models.AdminStaff.find({ role: "admin" }).lean();
+      return adminStaff.map(this.sanitizeStaffData);
+    } catch (error) {
+      logError("StaffRepository.findAdminStaffAsync", error);
+      return [];
+    }
   }
 
-  async findStaffByDepartmentAsync(department: string): Promise<MedicalStaff[]> {
+  async findStaffByDepartmentAsync(
+    department: string
+  ): Promise<MedicalStaff[]> {
     const [doctors, nurses, admins] = await Promise.all([
       Models.Doctor.find({ department }).lean(),
       Models.Nurse.find({ department }).lean(),
@@ -210,7 +235,9 @@ export class StaffRepository {
   }
 
   // Emergency team methods
-  async findEmergencyTeamByTriageLevelAsync(triageLevel: string): Promise<EmergencyTeamMember[]> {
+  async findEmergencyTeamByTriageLevelAsync(
+    triageLevel: string
+  ): Promise<EmergencyTeamMember[]> {
     const team = await Models.EmergencyTeamMember.find({
       activeShift: true,
       "specializedTraining.triageLevel": triageLevel,
@@ -229,7 +256,11 @@ export class StaffRepository {
   }
 
   async updateEmergencyCaseAsync(caseId: string, updateData: any) {
-    return await Models.EmergencyCase.findByIdAndUpdate(caseId, { $set: updateData }, { new: true }).lean();
+    return await Models.EmergencyCase.findByIdAndUpdate(
+      caseId,
+      { $set: updateData },
+      { new: true }
+    ).lean();
   }
 
   async findActiveEmergencyCasesAsync() {
@@ -244,7 +275,9 @@ export class StaffRepository {
     return technicians.map(this.sanitizeLabTechnicianData);
   }
 
-  async findAvailableLabTechniciansAsync(testType: string): Promise<LabTechnician[]> {
+  async findAvailableLabTechniciansAsync(
+    testType: string
+  ): Promise<LabTechnician[]> {
     const technicians = await Models.LabTechnician.find({
       activeShift: true,
       "specialization.testTypes": testType,
@@ -257,7 +290,11 @@ export class StaffRepository {
   }
 
   async updateLabTestAsync(testId: string, updateData: any) {
-    return await Models.LabTest.findByIdAndUpdate(testId, { $set: updateData }, { new: true }).lean();
+    return await Models.LabTest.findByIdAndUpdate(
+      testId,
+      { $set: updateData },
+      { new: true }
+    ).lean();
   }
 
   async findLabTestsByPatientAsync(patientId: string) {
@@ -273,7 +310,11 @@ export class StaffRepository {
   }
 
   // Appointment-related methods
-  async findByDoctorAndDateRange(doctorId: string, startDate: Date, endDate: Date) {
+  async findByDoctorAndDateRange(
+    doctorId: string,
+    startDate: Date,
+    endDate: Date
+  ) {
     return await Models.Appointment.find({
       doctorId,
       dateTime: {
@@ -283,7 +324,11 @@ export class StaffRepository {
     }).lean();
   }
 
-  async findBusyDoctors(date: Date, startTime: string, endTime: string): Promise<string[]> {
+  async findBusyDoctors(
+    date: Date,
+    startTime: string,
+    endTime: string
+  ): Promise<string[]> {
     const startDateTime = new Date(date);
     const [startHour, startMinute] = startTime.split(":").map(Number);
     startDateTime.setHours(startHour, startMinute, 0);
@@ -316,10 +361,18 @@ export class StaffRepository {
   }
 
   async updateExaminationAsync(id: string, updateData: any) {
-    return await Models.Examination.findByIdAndUpdate(id, { $set: updateData }, { new: true }).lean();
+    return await Models.Examination.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true }
+    ).lean();
   }
 
-  async findExaminationsByDoctorAsync(doctorId: string, startDate: Date, endDate: Date) {
+  async findExaminationsByDoctorAsync(
+    doctorId: string,
+    startDate: Date,
+    endDate: Date
+  ) {
     return await Models.Examination.find({
       doctorId,
       scheduledDate: {

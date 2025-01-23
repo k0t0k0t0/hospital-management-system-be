@@ -11,30 +11,41 @@ export const WardTypeEnum = z.enum([
   "isolation",
 ]);
 
-export const BedStatusEnum = z.enum(["available", "occupied", "reserved", "maintenance", "cleaning"]);
+export const BedStatusEnum = z.enum([
+  "available",
+  "occupied",
+  "reserved",
+  "maintenance",
+  "cleaning",
+]);
 
-export const ResourceTypeEnum = z.enum(["medical_equipment", "medication", "supplies", "staff"]);
+export const ResourceTypeEnum = z.enum([
+  "medical_equipment",
+  "medication",
+  "supplies",
+  "staff",
+]);
 
 export const BedSchema = z.object({
-  id: z.number(),
-  wardId: z.number(),
+  id: z.string(),
+  wardId: z.string(),
   number: z.string(),
   status: BedStatusEnum,
-  currentPatientId: z.number().optional(),
+  currentPatientId: z.string().optional(),
   lastOccupiedAt: z.date().optional(),
-  lastCleanedAt: z.date(),
+  // lastCleanedAt: z.date(),
   notes: z.string().optional(),
   features: z.array(z.string()).optional(), // e.g., ["oxygen_supply", "call_button"]
 });
 
 export const WardResourceSchema = z.object({
-  id: z.number(),
-  wardId: z.number(),
+  id: z.string(),
+  wardId: z.string(),
   type: ResourceTypeEnum,
   name: z.string(),
   quantity: z.number(),
   minimumRequired: z.number(),
-  lastRestockedAt: z.date(),
+  // lastRestockedAt: z.date(),
   notes: z.string().optional(),
 });
 
@@ -45,7 +56,7 @@ export const WardSchema = z.object({
   floor: z.number(),
   capacity: z.number(),
   currentOccupancy: z.number(),
-  assignedStaff: z.array(z.number()), // staff IDs
+  assignedStaff: z.array(z.string()), // staff IDs
   resources: z.array(WardResourceSchema),
   status: z.enum(["active", "maintenance", "closed"]),
   notes: z.string().optional(),
@@ -54,11 +65,11 @@ export const WardSchema = z.object({
 });
 
 export const PatientAssignmentSchema = z.object({
-  id: z.number(),
-  patientId: z.number(),
-  wardId: z.number(),
-  bedId: z.number(),
-  assignedBy: z.number(), // staff ID
+  id: z.string(),
+  patientId: z.string(),
+  wardId: z.string(),
+  bedId: z.string(),
+  assignedBy: z.string(), // staff ID
   assignedAt: z.date(),
   expectedDuration: z.number().optional(), // in days
   dischargeDate: z.date().optional(),

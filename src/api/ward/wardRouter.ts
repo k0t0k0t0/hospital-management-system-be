@@ -36,7 +36,10 @@ wardRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(PatientAssignmentSchema, "Successfully assigned patient to bed"),
+  responses: createApiResponse(
+    PatientAssignmentSchema,
+    "Successfully assigned patient to bed"
+  ),
 });
 
 wardRegistry.registerPath({
@@ -46,7 +49,10 @@ wardRegistry.registerPath({
   request: {
     params: z.object({ id: z.string() }),
   },
-  responses: createApiResponse(PatientAssignmentSchema, "Successfully discharged patient"),
+  responses: createApiResponse(
+    PatientAssignmentSchema,
+    "Successfully discharged patient"
+  ),
 });
 
 wardRegistry.registerPath({
@@ -66,7 +72,10 @@ wardRegistry.registerPath({
       },
     },
   },
-  responses: createApiResponse(WardResourceSchema, "Successfully updated ward resources"),
+  responses: createApiResponse(
+    WardResourceSchema,
+    "Successfully updated ward resources"
+  ),
 });
 
 wardRegistry.registerPath({
@@ -83,7 +92,7 @@ wardRegistry.registerPath({
       resources: z.array(WardResourceSchema),
       occupancyRate: z.number(),
     }),
-    "Successfully retrieved ward status",
+    "Successfully retrieved ward status"
   ),
 });
 
@@ -91,7 +100,10 @@ wardRegistry.registerPath({
   method: "get",
   path: "/ward/resources/low-stock",
   tags: ["Ward Management"],
-  responses: createApiResponse(z.array(WardResourceSchema), "Successfully retrieved low stock resources"),
+  responses: createApiResponse(
+    z.array(WardResourceSchema),
+    "Successfully retrieved low stock resources"
+  ),
 });
 
 wardRegistry.registerPath({
@@ -140,9 +152,9 @@ wardRouter.post(
   validateRequest(
     z.object({
       body: CreatePatientAssignmentSchema,
-    }),
+    })
   ),
-  wardController.assignPatientToBed,
+  wardController.assignPatientToBed
 );
 
 wardRouter.post(
@@ -150,9 +162,9 @@ wardRouter.post(
   validateRequest(
     z.object({
       params: z.object({ id: z.string() }),
-    }),
+    })
   ),
-  wardController.dischargePatient,
+  wardController.dischargePatient
 );
 
 wardRouter.put(
@@ -164,9 +176,9 @@ wardRouter.put(
         resourceId: z.string(),
       }),
       body: UpdateWardResourceSchema,
-    }),
+    })
   ),
-  wardController.updateWardResources,
+  wardController.updateWardResources
 );
 
 wardRouter.get(
@@ -174,9 +186,9 @@ wardRouter.get(
   validateRequest(
     z.object({
       params: z.object({ id: z.string() }),
-    }),
+    })
   ),
-  wardController.getWardStatus,
+  wardController.getWardStatus
 );
 
 wardRouter.get("/resources/low-stock", wardController.getLowStockResources);
@@ -191,9 +203,9 @@ wardRouter.post(
         createdAt: true,
         updatedAt: true,
       }),
-    }),
+    })
   ),
-  wardController.createWard,
+  wardController.createWard
 );
 
 wardRouter.post(
@@ -204,7 +216,21 @@ wardRouter.post(
         id: true,
         lastOccupiedAt: true,
       }),
-    }),
+    })
   ),
-  wardController.createBed,
+  wardController.createBed
 );
+
+// Add this new registry path with your other ward routes
+wardRegistry.registerPath({
+  method: "get",
+  path: "/ward/all",
+  tags: ["Ward Management"],
+  responses: createApiResponse(
+    z.array(WardSchema),
+    "Successfully retrieved all wards"
+  ),
+});
+
+// Add this new route with your other ward routes
+wardRouter.get("/all", wardController.getAllWards);

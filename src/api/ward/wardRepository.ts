@@ -1,19 +1,39 @@
 import type { Bed, PatientAssignment, Ward, WardResource } from "./wardModel";
 import { Models } from "./wardMongoSchema";
+import { logError } from "@/common/utils/errorLogger";
 
 export class WardRepository {
   // Ward methods
-  async findAllWardsAsync(): Promise<Ward[]> {
-    const wards = await Models.Ward.find().lean();
-    return wards.map(this.sanitizeWardData);
+  async findAllWardsAsync(): Promise<(Ward & { bedCount: number })[]> {
+    try {
+      const wards = await Models.Ward.find().lean();
+
+      // Get bed counts for all wards in parallel
+      const bedCounts = await Promise.all(
+        wards.map((ward) =>
+          Models.Bed.countDocuments({ wardId: ward._id.toString() })
+        )
+      );
+
+      // Combine ward data with bed counts
+      return wards.map((ward, index) => ({
+        ...this.sanitizeWardData(ward),
+        bedCount: bedCounts[index],
+      }));
+    } catch (error) {
+      logError("WardRepository.findAllWardsAsync", error);
+      return [];
+    }
   }
 
-  async findWardByIdAsync(id: number): Promise<Ward | null> {
+  async findWardByIdAsync(id: string): Promise<Ward | null> {
     const ward = await Models.Ward.findById(id).lean();
     return ward ? this.sanitizeWardData(ward) : null;
   }
 
-  async createWardAsync(wardData: Omit<Ward, "id" | "currentOccupancy" | "createdAt" | "updatedAt">): Promise<Ward> {
+  async createWardAsync(
+    wardData: Omit<Ward, "id" | "currentOccupancy" | "createdAt" | "updatedAt">
+  ): Promise<Ward> {
     const newWard = new Models.Ward({
       ...wardData,
       currentOccupancy: 0,
@@ -22,18 +42,25 @@ export class WardRepository {
     return this.sanitizeWardData(newWard.toObject());
   }
 
-  async updateWardAsync(id: number, wardData: Partial<Ward>): Promise<Ward | null> {
-    const updated = await Models.Ward.findByIdAndUpdate(id, { $set: wardData }, { new: true }).lean();
+  async updateWardAsync(
+    id: string,
+    wardData: Partial<Ward>
+  ): Promise<Ward | null> {
+    const updated = await Models.Ward.findByIdAndUpdate(
+      id,
+      { $set: wardData },
+      { new: true }
+    ).lean();
     return updated ? this.sanitizeWardData(updated) : null;
   }
 
   // Bed methods
-  async findBedsByWardAsync(wardId: number): Promise<Bed[]> {
+  async findBedsByWardAsync(wardId: string): Promise<Bed[]> {
     const beds = await Models.Bed.find({ wardId }).lean();
     return beds.map(this.sanitizeBedData);
   }
 
-  async findAvailableBedsAsync(wardId: number): Promise<Bed[]> {
+  async findAvailableBedsAsync(wardId: string): Promise<Bed[]> {
     const beds = await Models.Bed.find({
       wardId,
       status: "available",
@@ -41,7 +68,11 @@ export class WardRepository {
     return beds.map(this.sanitizeBedData);
   }
 
-  async updateBedStatusAsync(bedId: number, status: string, patientId?: number): Promise<Bed | null> {
+  async updateBedStatusAsync(
+    bedId: string,
+    status: string,
+    patientId?: string
+  ): Promise<Bed | null> {
     const update: any = {
       status,
       currentPatientId: patientId,
@@ -51,13 +82,17 @@ export class WardRepository {
       update.lastOccupiedAt = new Date();
     }
 
-    const updated = await Models.Bed.findByIdAndUpdate(bedId, { $set: update }, { new: true }).lean();
+    const updated = await Models.Bed.findByIdAndUpdate(
+      bedId,
+      { $set: update },
+      { new: true }
+    ).lean();
     return updated ? this.sanitizeBedData(updated) : null;
   }
 
   // Patient assignment methods
   async createPatientAssignmentAsync(
-    assignmentData: Omit<PatientAssignment, "id" | "assignedAt" | "status">,
+    assignmentData: Omit<PatientAssignment, "id" | "assignedAt" | "status">
   ): Promise<PatientAssignment> {
     const newAssignment = new Models.PatientAssignment({
       ...assignmentData,
@@ -68,16 +103,23 @@ export class WardRepository {
     return this.sanitizePatientAssignmentData(newAssignment.toObject());
   }
 
-  async updatePatientAssignmentAsync(id: number, data: Partial<PatientAssignment>): Promise<PatientAssignment | null> {
-    const updated = await Models.PatientAssignment.findByIdAndUpdate(id, { $set: data }, { new: true }).lean();
+  async updatePatientAssignmentAsync(
+    id: string,
+    data: Partial<PatientAssignment>
+  ): Promise<PatientAssignment | null> {
+    const updated = await Models.PatientAssignment.findByIdAndUpdate(
+      id,
+      { $set: data },
+      { new: true }
+    ).lean();
     return updated ? this.sanitizePatientAssignmentData(updated) : null;
   }
 
   // Resource management methods
   async updateWardResourceAsync(
-    wardId: number,
-    resourceId: number,
-    update: Partial<WardResource>,
+    wardId: string,
+    resourceId: string,
+    update: Partial<WardResource>
   ): Promise<WardResource | null> {
     const updated = await Models.WardResource.findOneAndUpdate(
       { wardId, _id: resourceId },
@@ -87,12 +129,12 @@ export class WardRepository {
           lastRestockedAt: new Date(),
         },
       },
-      { new: true },
+      { new: true }
     ).lean();
     return updated ? this.sanitizeWardResourceData(updated) : null;
   }
 
-  async getWardResourcesAsync(wardId: number): Promise<WardResource[]> {
+  async getWardResourcesAsync(wardId: string): Promise<WardResource[]> {
     const resources = await Models.WardResource.find({ wardId }).lean();
     return resources.map(this.sanitizeWardResourceData);
   }
@@ -104,13 +146,19 @@ export class WardRepository {
     return resources.map(this.sanitizeWardResourceData);
   }
 
-  async createBedAsync(bedData: Omit<Bed, "id" | "lastOccupiedAt">): Promise<Bed> {
-    const newBed = new Models.Bed(bedData);
-    await newBed.save();
-    return this.sanitizeBedData(newBed.toObject());
+  async createBedAsync(
+    bedData: Omit<Bed, "id" | "lastOccupiedAt">
+  ): Promise<Bed> {
+    try {
+      const newBed = new Models.Bed(bedData);
+      await newBed.save();
+      return this.sanitizeBedData(newBed.toObject());
+    } catch (error) {
+      throw error;
+    }
   }
 
-  async findBedByIdAsync(id: number): Promise<Bed | null> {
+  async findBedByIdAsync(id: string): Promise<Bed | null> {
     const bed = await Models.Bed.findById(id).lean();
     return bed ? this.sanitizeBedData(bed) : null;
   }
