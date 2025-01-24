@@ -1,5 +1,6 @@
 import type { Model } from "mongoose";
 import type {
+  AdminStaff,
   Doctor,
   EmergencyTeamMember,
   LabTechnician,
@@ -213,12 +214,12 @@ export class StaffRepository {
     return nurses.map(this.sanitizeNurseData);
   }
 
-  async findAdminStaffAsync() {
+  async findAdminStaffAsync(): Promise<AdminStaff[]> {
     try {
-      const adminStaff = await Models.AdminStaff.find({ role: "admin" }).lean();
+      const adminStaff = await Models.AdminStaff.find().lean();
       return adminStaff.map(this.sanitizeStaffData);
     } catch (error) {
-      logError("StaffRepository.findAdminStaffAsync", error);
+      logError("Error finding admin staff", error);
       return [];
     }
   }

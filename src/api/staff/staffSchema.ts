@@ -120,7 +120,7 @@ const adminStaffSchema = new Schema(
     },
     accessLevel: {
       type: String,
-      enum: ["basic", "intermediate", "full"],
+      enum: ["full", "restricted", "readonly"],
       required: true,
     },
     responsibilities: [{ type: String }],

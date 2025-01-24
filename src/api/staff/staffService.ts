@@ -77,6 +77,7 @@ export class StaffService {
         staff
       );
     } catch (error) {
+      logError("StaffService.findById", error);
       return ServiceResponse.failure(
         "Failed to retrieve staff member",
         null,

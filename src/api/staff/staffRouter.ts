@@ -63,7 +63,12 @@ staffRegistry.registerPath({
   ),
 });
 
-staffRouter.get("/doctors", staffController.getDoctors);
+staffRouter.get(
+  "/doctors",
+  verifyToken,
+  checkRole(["admin", "nurse"]),
+  staffController.getDoctors
+);
 
 // GET /staff/nurses
 staffRegistry.registerPath({
@@ -77,6 +82,19 @@ staffRegistry.registerPath({
 });
 
 staffRouter.get("/nurses", staffController.getNurses);
+
+// GET /staff/admin
+staffRegistry.registerPath({
+  method: "get",
+  path: "/staff/admin",
+  tags: ["Medical Staff"],
+  responses: createApiResponse(
+    z.array(AdminStaffSchema),
+    "Successfully retrieved all admin staff"
+  ),
+});
+
+staffRouter.get("/admin", staffController.getAdminStaff);
 
 // GET /staff/:id
 staffRegistry.registerPath({
@@ -301,19 +319,6 @@ staffRouter.put(
   ),
   staffController.updateNurseShift
 );
-
-// GET /staff/admin
-staffRegistry.registerPath({
-  method: "get",
-  path: "/staff/admin",
-  tags: ["Administrative Staff"],
-  responses: createApiResponse(
-    z.array(AdminStaffSchema),
-    "Successfully retrieved all administrative staff"
-  ),
-});
-
-staffRouter.get("/admin", staffController.getAdminStaff);
 
 // GET /staff/department/:department
 staffRegistry.registerPath({
