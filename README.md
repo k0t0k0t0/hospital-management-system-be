@@ -1,73 +1,120 @@
-# 🚀 Express TypeScript Boilerplate 2024
+# Hospital Management System (HMS)
 
-[![Build](https://github.com/edwinhern/express-typescript-2024/actions/workflows/build.yml/badge.svg)](https://github.com/edwinhern/express-typescript-2024/actions/workflows/build.yml)
-[![Test](https://github.com/edwinhern/express-typescript-2024/actions/workflows/test.yml/badge.svg)](https://github.com/edwinhern/express-typescript-2024/actions/workflows/test.yml)
-[![Code Quality](https://github.com/edwinhern/express-typescript-2024/actions/workflows/code-quality.yml/badge.svg)](https://github.com/edwinhern/express-typescript-2024/actions/workflows/code-quality.yml)
-[![Docker Image CI](https://github.com/edwinhern/express-typescript-2024/actions/workflows/docker-image.yml/badge.svg)](https://github.com/edwinhern/express-typescript-2024/actions/workflows/docker-image.yml)
+A modern, full-stack Hospital Management System built with React and Node.js, designed to streamline healthcare facility operations.
 
-``` code
-Hey There! 🙌 
-🤾 that ⭐️ button if you like this boilerplate. 
+## Features
+
+### Admin Portal
+- **Doctor Management**
+  - Add, edit, and remove doctors
+  - Manage doctor schedules and availability
+  - Track specializations and departments
+  - Handle doctor credentials and licensing
+
+- **Patient Management**
+  - Complete patient registration and profile management
+  - Medical history tracking
+  - Emergency contact information
+  - Insurance details
+  - Communication preferences
+
+### Key Features
+- Responsive Material-UI design
+- Real-time data updates
+- Secure authentication
+- Form validation
+- Modal-based editing interfaces
+
+## Technology Stack
+
+### Frontend
+- React.js
+- Material-UI (MUI)
+- Axios for API communication
+- React Hooks for state management
+
+### Backend
+- Node.js
+- Express.js
+- MongoDB
+- RESTful API architecture
+
+## Getting Started
+
+### Prerequisites
+- Node.js (v14 or higher)
+- MongoDB
+- npm or yarn
+
+### Installation
+
+1. Clone the repository
+```bash
+git clone https://github.com/yourusername/hospital-management-system.git
+cd hospital-management-system
 ```
 
-## 🌟 Introduction
+2. Install dependencies
+```bash
+# Install frontend dependencies
+cd frontend
+npm install
 
-Welcome to the Express TypeScript Boilerplate 2024 – a streamlined, efficient, and scalable foundation for building powerful backend services with modern tools and practices in Express.js and TypeScript.
+# Install backend dependencies
+cd ../backend
+npm install
+```
 
-## 💡 Motivation
+3. Environment Setup
+Create a `.env` file in the backend directory:
+```env
+PORT=8080
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+```
 
-This boilerplate aims to:
+4. Start the application
+```bash
+# Start backend server
+cd backend
+npm start
 
-- ✨ Reduce setup time for new projects
-- 📊 Ensure code consistency and quality
-- ⚡  Facilitate rapid development
-- 🛡️ Encourage best practices in security, testing, and performance
+# Start frontend development server
+cd frontend
+npm start
+```
 
-## 🚀 Features
+The application will be available at `http://localhost:3000`
 
-- 📁 Modular Structure: Organized by feature for easy navigation and scalability
-- 💨 Faster Execution with tsx: Rapid TypeScript execution with `tsx` and type checking with `tsc`
-- 🌐 Stable Node Environment: Latest LTS Node version in `.nvmrc`
-- 🔧 Simplified Environment Variables: Managed with Envalid
-- 🔗 Path Aliases: Cleaner code with shortcut imports
-- 🔄 Renovate Integration: Automatic updates for dependencies
-- 🔒 Security: Helmet for HTTP header security and CORS setup
-- 📊 Logging: Efficient logging with `pino-http`
-- 🧪 Comprehensive Testing: Setup with Vitest and Supertest
-- 🔑 Code Quality Assurance: Husky and lint-staged for consistent quality
-- ✅ Unified Code Style: `Biomejs` for consistent coding standards
-- 📃 API Response Standardization: `ServiceResponse` class for consistent API responses
-- 🐳 Docker Support: Ready for containerization and deployment
-- 📝 Input Validation with Zod: Strongly typed request validation using `Zod`
-- 🧩 Swagger UI: Interactive API documentation generated from Zod schemas
+## API Endpoints
 
-## 🛠️ Getting Started
+### Doctors
+- `GET /staff/doctors` - Get all doctors
+- `POST /staff` - Add new doctor
+- `PUT /staff/:id` - Update doctor
+- `DELETE /staff/:id` - Remove doctor
 
-### Video Demo
+### Patients
+- `GET /patients` - Get all patients
+- `POST /patients` - Add new patient
+- `PUT /patients/:id` - Update patient
+- `DELETE /patients/:id` - Remove patient
 
-For a visual guide, watch the [video demo](https://github.com/user-attachments/assets/b1698dac-d582-45a0-8d61-31131732b74e) to see the setup and running of the project.
+## Contributing
 
-### Step-by-Step Guide
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-#### Step 1: 🚀 Initial Setup
+## License
 
-- Clone the repository: `git clone https://github.com/edwinhern/express-typescript-2024.git`
-- Navigate: `cd express-typescript-2024`
-- Install dependencies: `npm ci`
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
-#### Step 2: ⚙️ Environment Configuration
+## Acknowledgments
 
-- Create `.env`: Copy `.env.template` to `.env`
-- Update `.env`: Fill in necessary environment variables
+- Material-UI for the beautiful components
+- The React community for excellent documentation
+- All contributors who help improve this system
 
-#### Step 3: 🏃‍♂️ Running the Project
-
-- Development Mode: `npm run dev`
-- Building: `npm run build`
-- Production Mode: Set `.env` to `NODE_ENV="production"` then `npm run build && npm run start`
-
-## 🤝 Feedback and Contributions
-
-We'd love to hear your feedback and suggestions for further improvements. Feel free to contribute and join us in making backend development cleaner and faster!
-
-🎉 Happy coding!
