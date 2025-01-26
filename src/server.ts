@@ -28,7 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 // TODO: Remove this after testing
 app.use(
   cors({
-    origin: "http://localhost:5173", // Your frontend URL
+    origin: "http://localhost:3000", // Your frontend URL
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
