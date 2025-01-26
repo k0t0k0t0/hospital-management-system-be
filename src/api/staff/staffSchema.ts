@@ -190,7 +190,7 @@ const labTechnicianSchema = new Schema(
       },
     ],
     certifications: [{ type: String }],
-    labId: { type: String, required: true },
+    // labId: { type: String, required: true },
     activeShift: { type: Boolean, required: true },
     equipmentQualifications: [{ type: String }],
   },

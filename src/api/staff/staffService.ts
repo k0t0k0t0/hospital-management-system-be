@@ -150,6 +150,7 @@ export class StaffService {
       }
       return ServiceResponse.success("Staff member deleted successfully", null);
     } catch (error) {
+      logError("StaffService.delete", error);
       return ServiceResponse.failure(
         "Failed to delete staff member",
         null,

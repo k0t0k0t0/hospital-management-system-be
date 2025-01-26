@@ -87,12 +87,33 @@ export const TriageLevelEnum = z.enum([
 export const EmergencyTeamMemberSchema = StaffBaseSchema.extend({
   role: z.literal("emergency"),
   emergencyRole: EmergencyRoleEnum,
-  specializedTraining: z.array(z.string()),
-  certifications: z.array(z.string()),
-  triageAccess: z.array(TriageLevelEnum),
-  activeShift: z.boolean(),
-  lastEmergencyResponse: z.date().optional(),
-  responseTeamId: z.string().optional(),
+  specializedTraining: z.array(z.string(), {
+    required_error: "Specialized training is required",
+    invalid_type_error: "Specialized training must be an array of strings",
+  }),
+  certifications: z.array(z.string(), {
+    required_error: "Certifications are required",
+    invalid_type_error: "Certifications must be an array of strings",
+  }),
+  triageAccess: z.array(TriageLevelEnum, {
+    required_error: "Triage access levels are required",
+    invalid_type_error: "Triage access must be an array of valid triage levels",
+  }),
+  activeShift: z.boolean({
+    required_error: "Active shift status is required",
+    invalid_type_error: "Active shift must be a boolean",
+  }),
+  lastEmergencyResponse: z
+    .string({
+      invalid_type_error: "Last emergency response must be a valid date",
+    })
+    .date()
+    .optional(),
+  responseTeamId: z
+    .string({
+      invalid_type_error: "Response team ID must be a string",
+    })
+    .optional(),
 });
 
 // Lab technician schema

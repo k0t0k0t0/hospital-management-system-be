@@ -10,6 +10,7 @@ import {
   CreatePatientSchema,
   MessageSchema,
   PatientSchema,
+  PatientEmergencySchema,
 } from "@/api/patient/patientModel";
 import { validateRequest } from "@/common/utils/httpHandlers";
 import { patientController } from "./patientController";
@@ -419,39 +420,6 @@ const EmergencyVisitSchema = z.object({
     oxygenSaturation: z.number(),
   }),
   attendingStaffId: z.number(),
-});
-
-// Add this with your other schema definitions
-const PatientEmergencySchema = z.object({
-  patientInfo: z.object({
-    id: z.number(),
-    firstName: z.string(),
-    lastName: z.string(),
-    dateOfBirth: z.date(),
-    bloodType: z.string().optional(),
-    allergies: z.array(z.string()).optional(),
-  }),
-  emergencyContact: EmergencyContactSchema,
-  medicalHistory: z.object({
-    chronicConditions: z.array(z.string()).optional(),
-    currentMedications: z.array(z.string()).optional(),
-    recentProcedures: z.array(z.string()).optional(),
-  }),
-  insuranceInfo: z
-    .object({
-      provider: z.string(),
-      policyNumber: z.string(),
-      groupNumber: z.string().optional(),
-      expirationDate: z.date().optional(),
-    })
-    .optional(),
-  lastEmergencyVisit: z
-    .object({
-      date: z.date(),
-      reason: z.string(),
-      outcome: z.string(),
-    })
-    .optional(),
 });
 
 // Register emergency routes

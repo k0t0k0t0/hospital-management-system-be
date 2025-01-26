@@ -35,14 +35,14 @@ export class StaffRepository {
 
   async findByIdAsync(id: string): Promise<MedicalStaff | null> {
     try {
-      const staff = await Promise.any([
-        Models.Doctor.findById(id).lean(),
-        Models.Nurse.findById(id).lean(),
-        Models.AdminStaff.findById(id).lean(),
-        Models.EmergencyTeamMember.findById(id).lean(),
-        Models.LabTechnician.findById(id).lean(),
-      ]);
-      return staff ? this.sanitizeStaffData(staff) : null;
+      // Try each model sequentially instead of Promise.any
+      for (const Model of Object.values(this.ModelMap)) {
+        const staff = await Model.findById(id).lean();
+        if (staff) {
+          return this.sanitizeStaffData(staff);
+        }
+      }
+      return null;
     } catch (error) {
       logError("StaffRepository.findByIdAsync", error);
       return null;
@@ -76,6 +76,7 @@ export class StaffRepository {
 
   async deleteAsync(id: string): Promise<boolean> {
     const currentStaff = await this.findByIdAsync(id);
+    console.log("currentStaff", currentStaff);
     if (!currentStaff) return false;
 
     const result = await this.ModelMap[currentStaff.role].findByIdAndDelete(id);
